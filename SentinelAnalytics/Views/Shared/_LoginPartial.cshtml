@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
+}
+else
+{
+    <a class="text-sm font-bold text-slate-500 px-4 py-2 hover:bg-slate-100 rounded-lg" asp-area="Identity" asp-page="/Account/Login">
+        Sign In
+    </a>
+}

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SentinelAnalytics.Client/SentinelAnalytics.Client.csproj" Id="93a21401-af3c-4a0d-8ff5-d401eb8a75a6" />
+  <Project Path="SentinelAnalytics/SentinelAnalytics.csproj" />
+</Solution>

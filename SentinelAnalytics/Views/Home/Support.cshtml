@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Support Center";
+    Layout = "_Layout";
+}
+
+<div class="bg-slate-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-slate-900 py-20 px-6 text-center text-white">
+        <div class="max-w-4xl mx-auto space-y-6">
+            <h1 class="text-5xl font-black tracking-tight">How can we help?</h1>
+            <p class="text-xl text-slate-400">Find answers in our docs or reach out to our engineering support team.</p>
+            <div class="max-w-xl mx-auto relative mt-10">
+                <input type="text" placeholder="Search for guides, API docs, or common issues..." class="w-full px-6 py-4 bg-white/10 border border-white/20 rounded-2xl text-white outline-none focus:ring-2 focus:ring-indigo-500 backdrop-blur-sm transition-all shadow-2xl">
+                <span class="absolute right-6 top-1/2 -translate-y-1/2 opacity-50">🔍</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid md:grid-cols-3 gap-8 mb-20">
+            <!-- Documentation -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all group">
+                <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📚</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Documentation</h3>
+                <p class="text-slate-500 text-sm mb-6">Complete guides on SDK integration, data privacy, and dashboard configuration.</p>
+                <a href="#" class="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-2">Explore Docs <span>→</span></a>
+            </div>
+
+            <!-- Community -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all group">
+                <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">💬</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Developer Slack</h3>
+                <p class="text-slate-500 text-sm mb-6">Join our community of mobile engineers to share tips and get quick help.</p>
+                <a href="#" class="text-emerald-600 font-bold text-sm hover:underline flex items-center gap-2">Join Slack <span>→</span></a>
+            </div>
+
+            <!-- Email Support -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-rose-200 transition-all group">
+                <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">✉️</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Enterprise Support</h3>
+                <p class="text-slate-500 text-sm mb-6">Need a custom SLA or direct engineering assistance? Contact our team.</p>
+                <a href="mailto:support@latec-analytics.com" class="text-rose-600 font-bold text-sm hover:underline flex items-center gap-2">Email Support <span>→</span></a>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="max-w-3xl mx-auto space-y-12">
+            <h2 class="text-3xl font-black text-slate-900 text-center">Frequently Asked Questions</h2>
+            <div class="space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">How do I integrate the SDK into .NET MAUI?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">Simply install our NuGet package and initialize it in your MauiProgram.cs file. Our SDK automatically hooks into the global exception handler.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">Is my data sent to Gemini AI private?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">Yes. We only transmit the technical stack trace and error message for analysis. No user-specific PII is sent to the AI processing layer unless you explicitly include it in the trace.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h4 class="font-bold text-slate-900 mb-2">Can I host LATec on-premise?</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">Enterprise customers have the option for private cloud deployment or localized MSSQL instances to meet strict data residency requirements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
