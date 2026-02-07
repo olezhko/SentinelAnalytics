@@ -8,15 +8,12 @@ public class MobileEvent
     [Key]
     public long Id { get; set; }
     public Guid ProjectId { get; set; }
-    [Required]
-    public string SessionId { get; set; }
-    [Required]
-    public string EventName { get; set; }
+    public required string SessionId { get; set; }
+    public required string EventName { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    // Stored as JSON string in MSSQL for flexibility
     public string? PropertiesJson { get; set; }
 
     [ForeignKey("ProjectId")]
-    public virtual Project Project { get; set; }
+    public virtual Project Project { get; set; } = null!;
 }

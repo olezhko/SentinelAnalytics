@@ -161,11 +161,11 @@ namespace SentinelAnalytics.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApiKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Platform = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ApiKey = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    Platform = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -175,7 +175,7 @@ namespace SentinelAnalytics.Data.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,17 +184,17 @@ namespace SentinelAnalytics.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Severity = table.Column<int>(type: "int", nullable: false),
-                    ExceptionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StackTrace = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AppVersion = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OsVersion = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DeviceModel = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PropertiesJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Severity = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ExceptionName = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    StackTrace = table.Column<string>(type: "nvarchar(max)", maxLength: 8000, nullable: false),
+                    AppVersion = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    OsVersion = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DeviceModel = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PropertiesJson = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -214,10 +214,10 @@ namespace SentinelAnalytics.Data.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EventName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PropertiesJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    PropertiesJson = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -275,9 +275,19 @@ namespace SentinelAnalytics.Data.Migrations
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CrashReports_ProjectId_Severity",
+                table: "CrashReports",
+                columns: new[] { "ProjectId", "Severity" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CrashReports_SessionId",
                 table: "CrashReports",
                 column: "SessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CrashReports_Timestamp",
+                table: "CrashReports",
+                column: "Timestamp");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MobileEvents_ProjectId",
@@ -285,9 +295,19 @@ namespace SentinelAnalytics.Data.Migrations
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MobileEvents_ProjectId_EventName",
+                table: "MobileEvents",
+                columns: new[] { "ProjectId", "EventName" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MobileEvents_SessionId",
                 table: "MobileEvents",
                 column: "SessionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MobileEvents_Timestamp",
+                table: "MobileEvents",
+                column: "Timestamp");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_ApiKey",

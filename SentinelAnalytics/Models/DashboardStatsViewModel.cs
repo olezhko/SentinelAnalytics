@@ -14,6 +14,6 @@ public class DashboardStatsViewModel
 
 public class DailyStat
 {
-    public string Date { get; set; }
+    public required string Date { get; set; }
     public int Count { get; set; }
 }

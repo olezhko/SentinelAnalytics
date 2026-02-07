@@ -4,7 +4,6 @@ using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
 using SentinelAnalytics.Models.Dtos;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SentinelAnalytics.Controllers;
 
@@ -33,6 +32,7 @@ public class IngestController(SentinelDbContext db) : ControllerBase
             UserId = report.UserId ?? string.Empty,
             PropertiesJson = report.Properties != null ? JsonSerializer.Serialize(report.Properties) : null
         };
+
         db.CrashReports.Add(newReport);
         await db.SaveChangesAsync();
         return Ok();

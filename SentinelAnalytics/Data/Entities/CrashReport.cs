@@ -8,23 +8,21 @@ public class CrashReport
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ProjectId { get; set; }
-    [Required]
-    public string SessionId { get; set; }
+    public required string SessionId { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     public Severity Severity { get; set; }
 
-    [Required]
-    public string ExceptionName { get; set; }
-    public string Message { get; set; }
-    public string StackTrace { get; set; }
+    public required string ExceptionName { get; set; }
+    public required string Message { get; set; }
+    public required string StackTrace { get; set; }
 
-    public string AppVersion { get; set; }
-    public string OsVersion { get; set; }
-    public string DeviceModel { get; set; }
-    public string UserId { get; set; }
+    public required string AppVersion { get; set; }
+    public required string OsVersion { get; set; }
+    public required string DeviceModel { get; set; }
+    public string? UserId { get; set; }
 
     public string? PropertiesJson { get; set; }
 
     [ForeignKey("ProjectId")]
-    public virtual Project Project { get; set; }
+    public virtual Project Project { get; set; } = null!;
 }

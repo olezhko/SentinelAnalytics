@@ -33,6 +33,7 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
             RecentCrashes = new List<CrashReport>
             {
                 new CrashReport {
+                    SessionId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid(),
                     ExceptionName = "NullReferenceException",
                     Message = "Object reference not set to an instance of an object at PaymentGateway.AuthorizeTransaction",
@@ -44,6 +45,7 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                     StackTrace = "at Sentinel.Mobile.PaymentGateway.AuthorizeTransaction(Amount val) in Gateway.cs:line 442\nat Sentinel.Mobile.Checkout.Confirm() in CheckoutViewModel.cs:line 89"
                 },
                 new CrashReport {
+                    SessionId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid(),
                     ExceptionName = "SQLiteException",
                     Message = "Database is locked. Unable to perform write operation during sync.",
@@ -55,6 +57,7 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                     StackTrace = "at Microsoft.Data.Sqlite.SqliteException.ThrowExceptionForRC(Int32 rc, sqlite3 db)\nat Microsoft.Data.Sqlite.SqliteCommand.ExecuteNonQuery()"
                 },
                 new CrashReport {
+                    SessionId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid(),
                     ExceptionName = "IndexOutOfRangeException",
                     Message = "Index was outside the bounds of the array at FeedAdapter.OnBindViewHolder",
@@ -66,6 +69,7 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                     StackTrace = "at Sentinel.Mobile.Adapters.FeedAdapter.OnBindViewHolder(ViewHolder holder, Int32 position)\nat Android.Widget.RecyclerView.Bind()"
                 },
                 new CrashReport {
+                    SessionId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid(),
                     ExceptionName = "TaskCanceledException",
                     Message = "A task was canceled while waiting for the ImageBuffer to flush.",
