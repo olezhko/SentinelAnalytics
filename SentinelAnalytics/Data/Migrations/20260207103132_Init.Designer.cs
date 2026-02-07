@@ -12,7 +12,7 @@ using SentinelAnalytics.Data;
 namespace SentinelAnalytics.Data.Migrations
 {
     [DbContext(typeof(SentinelDbContext))]
-    [Migration("20260205171031_Init")]
+    [Migration("20260207103132_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -256,6 +256,9 @@ namespace SentinelAnalytics.Data.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PropertiesJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SessionId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -299,7 +302,6 @@ namespace SentinelAnalytics.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesJson")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SessionId")

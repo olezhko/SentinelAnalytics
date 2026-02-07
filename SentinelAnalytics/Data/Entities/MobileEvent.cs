@@ -15,7 +15,7 @@ public class MobileEvent
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     // Stored as JSON string in MSSQL for flexibility
-    public string PropertiesJson { get; set; }
+    public string? PropertiesJson { get; set; }
 
     [ForeignKey("ProjectId")]
     public virtual Project Project { get; set; }

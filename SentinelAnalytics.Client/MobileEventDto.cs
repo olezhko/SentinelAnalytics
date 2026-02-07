@@ -1,4 +1,4 @@
-﻿namespace SentinelAnalytics.Client;
+﻿namespace SentinelAnalytics.Maui;
 
 public sealed class MobileEventDto
 {

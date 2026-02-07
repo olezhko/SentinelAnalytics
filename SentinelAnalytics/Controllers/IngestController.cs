@@ -30,7 +30,8 @@ public class IngestController(SentinelDbContext db) : ControllerBase
             Severity = report.Severity,
             StackTrace = report.StackTrace,
             Timestamp = DateTime.UtcNow,
-            UserId = report.UserId ?? string.Empty
+            UserId = report.UserId ?? string.Empty,
+            PropertiesJson = report.Properties != null ? JsonSerializer.Serialize(report.Properties) : null
         };
         db.CrashReports.Add(newReport);
         await db.SaveChangesAsync();

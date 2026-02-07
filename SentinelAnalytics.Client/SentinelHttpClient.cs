@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
 
-namespace SentinelAnalytics.Client;
+namespace SentinelAnalytics.Maui;
 
 internal sealed class SentinelHttpClient
 {
@@ -10,7 +10,7 @@ internal sealed class SentinelHttpClient
     {
         _http = new HttpClient
         {
-            BaseAddress = new Uri(options.Endpoint),
+            BaseAddress = new Uri("https://analytics-mobile.com/api/ingest"),
             Timeout = options.Timeout
         };
 

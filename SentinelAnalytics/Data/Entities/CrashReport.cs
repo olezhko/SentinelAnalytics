@@ -23,6 +23,8 @@ public class CrashReport
     public string DeviceModel { get; set; }
     public string UserId { get; set; }
 
+    public string? PropertiesJson { get; set; }
+
     [ForeignKey("ProjectId")]
     public virtual Project Project { get; set; }
 }

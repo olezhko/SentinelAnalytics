@@ -1,4 +1,4 @@
-﻿namespace SentinelAnalytics.Client;
+﻿namespace SentinelAnalytics.Maui;
 
 public sealed class CrashReportDto
 {
@@ -11,4 +11,5 @@ public sealed class CrashReportDto
     public required string DeviceModel { get; init; }
     public string Severity { get; init; } = "Error";
     public string? UserId { get; init; }
+    public IDictionary<string, object>? Properties { get; init; }
 }

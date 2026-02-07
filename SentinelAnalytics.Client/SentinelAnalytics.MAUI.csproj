@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-ios;net10.0-android</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseMaui>true</UseMaui>
+
+    <PackageId>SentinelAnalytics.MAUI</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Aleh Ladyka</Authors>
+    <Company>LATec</Company>
+    <Description>Sentinel Analytics SDK for .NET MAUI</Description>
+    <RepositoryUrl>https://github.com/olezhko/SentinelAnalytics</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.10" />
+  </ItemGroup>
+</Project>

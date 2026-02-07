@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace SentinelAnalytics.Maui;
 
-namespace SentinelAnalytics.Client;
-
-public static class SentinelAnalytics
+public static class SentinelTracker
 {
     private static SentinelHttpClient? _client;
     private static SentinelOptions? _options;
@@ -15,16 +11,18 @@ public static class SentinelAnalytics
         _client = new SentinelHttpClient(options);
     }
 
-    public static async Task LogError(
+    public static async Task TrackErrorAsync(
         Exception ex,
+        string sessionId,
         string? userId = null,
-        string severity = "Error")
+        string severity = "Error", 
+        IDictionary<string, object> properties = null)
     {
         EnsureInitialized();
 
         var dto = new CrashReportDto
         {
-            SessionId = Guid.NewGuid().ToString(),
+            SessionId = sessionId,
             ExceptionName = ex.GetType().Name,
             Message = ex.Message,
             StackTrace = ex.StackTrace ?? string.Empty,
@@ -32,23 +30,24 @@ public static class SentinelAnalytics
             AppVersion = _options!.AppVersion,
             OsVersion = DeviceInfoProvider.GetOsVersion(),
             DeviceModel = DeviceInfoProvider.GetDeviceModel(),
-            UserId = userId
+            UserId = userId,
+            Properties = properties
         };
 
         await _client!.SendCrashAsync(dto);
     }
 
-    public static async Task TrackEvent(
+    public static async Task TrackEventAsync(
         string eventName,
-        object? properties = null,
-        string? sessionId = null)
+        string sessionId,
+        IDictionary<string, object> properties = null)
     {
         EnsureInitialized();
 
         var dto = new MobileEventDto
         {
             EventName = eventName,
-            SessionId = sessionId ?? Guid.NewGuid().ToString(),
+            SessionId = sessionId,
             Properties = properties
         };
 

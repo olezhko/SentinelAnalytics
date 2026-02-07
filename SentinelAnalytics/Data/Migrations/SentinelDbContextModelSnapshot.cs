@@ -253,6 +253,9 @@ namespace SentinelAnalytics.Data.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PropertiesJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SessionId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -296,7 +299,6 @@ namespace SentinelAnalytics.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesJson")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SessionId")

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Devices;
-
-namespace SentinelAnalytics.Client;
+﻿namespace SentinelAnalytics.Maui;
 
 internal static class DeviceInfoProvider
 {

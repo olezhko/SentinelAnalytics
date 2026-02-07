@@ -193,7 +193,8 @@ namespace SentinelAnalytics.Data.Migrations
                     AppVersion = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OsVersion = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DeviceModel = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PropertiesJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -216,7 +217,7 @@ namespace SentinelAnalytics.Data.Migrations
                     SessionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     EventName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PropertiesJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    PropertiesJson = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

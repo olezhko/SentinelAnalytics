@@ -1,10 +1,13 @@
 ﻿using SentinelAnalytics.Data.Entities;
+using System.Text.Json.Serialization;
 
 namespace SentinelAnalytics.Models.Dtos
 {
     public sealed class CrashReportDto
     {
         public required string SessionId { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public Severity Severity { get; set; }
 
         public required string ExceptionName { get; set; }
@@ -15,5 +18,7 @@ namespace SentinelAnalytics.Models.Dtos
         public required string OsVersion { get; set; }
         public required string DeviceModel { get; set; }
         public string? UserId { get; set; }
+
+        public required Dictionary<string, string> Properties { get; set; }
     }
 }
