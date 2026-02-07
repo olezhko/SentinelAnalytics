@@ -1,5 +1,6 @@
 # SentinelAnalytics
 
+Sentinel is the enterprise-grade analytics engine for mobile teams. Track every event, catch every crash, and fix issues faster with AI.
 
 # How to Use
 
