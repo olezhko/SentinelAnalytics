@@ -4,6 +4,6 @@
     {
         public required string SessionId { get; set; }
         public required string EventName { get; set; }
-        public required Dictionary<string, string> Properties { get; set; }
+        public Dictionary<string, string>? Properties { get; set; }
     }
 }

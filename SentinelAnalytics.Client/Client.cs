@@ -3,12 +3,10 @@
 public static class SentinelTracker
 {
     private static SentinelHttpClient? _client;
-    private static SentinelOptions? _options;
 
-    public static void Initialize(SentinelOptions options)
+    public static void Initialize(string productKey)
     {
-        _options = options;
-        _client = new SentinelHttpClient(options);
+        _client = new SentinelHttpClient(productKey);
     }
 
     public static async Task TrackErrorAsync(
@@ -27,7 +25,7 @@ public static class SentinelTracker
             Message = ex.Message,
             StackTrace = ex.StackTrace ?? string.Empty,
             Severity = severity,
-            AppVersion = _options!.AppVersion,
+            AppVersion = AppInfo.VersionString,
             OsVersion = DeviceInfoProvider.GetOsVersion(),
             DeviceModel = DeviceInfoProvider.GetDeviceModel(),
             UserId = userId,

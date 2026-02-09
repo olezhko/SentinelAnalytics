@@ -6,26 +6,38 @@ internal sealed class SentinelHttpClient
 {
     private readonly HttpClient _http;
 
-    public SentinelHttpClient(SentinelOptions options)
+    public SentinelHttpClient(string projectApiKey)
     {
         _http = new HttpClient
         {
-            BaseAddress = new Uri("https://analytics-mobile.com/api/ingest"),
-            Timeout = options.Timeout
+            BaseAddress = new Uri("https://analytics-mobile.com/api/ingest/"),
+            Timeout = TimeSpan.FromSeconds(10)
         };
 
-        _http.DefaultRequestHeaders.Add("X-Sentinel-Key", options.ApiKey);
+        _http.DefaultRequestHeaders.Add("X-Sentinel-Key", projectApiKey);
     }
 
     public async Task SendCrashAsync(CrashReportDto dto)
     {
-        var response = await _http.PostAsJsonAsync("crash", dto);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _http.PostAsJsonAsync("crash", dto);
+            response.EnsureSuccessStatusCode();
+        }
+        catch
+        {
+        }
     }
 
     public async Task SendEventAsync(MobileEventDto dto)
     {
-        var response = await _http.PostAsJsonAsync("event", dto);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _http.PostAsJsonAsync("event", dto);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception)
+        {
+        }
     }
 }

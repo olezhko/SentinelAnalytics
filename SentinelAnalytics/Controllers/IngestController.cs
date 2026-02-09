@@ -50,7 +50,7 @@ public class IngestController(SentinelDbContext db) : ControllerBase
             EventName = ev.EventName,
             SessionId = ev.SessionId,
             Timestamp = DateTime.UtcNow,
-            PropertiesJson = JsonSerializer.Serialize(ev.Properties)
+            PropertiesJson = ev.Properties != null ? JsonSerializer.Serialize(ev.Properties) : null
         };
 
         db.MobileEvents.Add(mobileEvent);

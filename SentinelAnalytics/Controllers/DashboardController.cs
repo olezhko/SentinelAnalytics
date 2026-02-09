@@ -11,6 +11,7 @@ namespace SentinelAnalytics.Controllers;
 [Authorize]
 public class DashboardController(SentinelDbContext db, IGeminiService ai) : Controller
 {
+    [AllowAnonymous]
     public IActionResult Demo()
     {
         var now = DateTime.UtcNow;

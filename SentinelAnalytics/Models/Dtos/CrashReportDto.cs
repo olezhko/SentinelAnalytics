@@ -19,6 +19,6 @@ namespace SentinelAnalytics.Models.Dtos
         public required string DeviceModel { get; set; }
         public string? UserId { get; set; }
 
-        public required Dictionary<string, string> Properties { get; set; }
+        public Dictionary<string, string>? Properties { get; set; }
     }
 }
