@@ -5,6 +5,7 @@ using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
 using SentinelAnalytics.Models;
 using SentinelAnalytics.Services;
+using System.Text;
 
 namespace SentinelAnalytics.Controllers;
 
@@ -20,7 +21,7 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
         {
             TotalCrashes = 142,
             ProjectName = "Demo",
-            ActiveUsersCount = 28450,
+            ActiveSessionsCount = 28450,
             DailyTrends = new List<DailyStat>
             {
                 new DailyStat { Date = now.AddDays(-6).ToString("MMM dd"), Count = 12 },
@@ -81,17 +82,30 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                     Severity = Severity.Info,
                     StackTrace = "at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)\nat Sentinel.Mobile.Media.ImageLoader.LoadAsync(String url)"
                 }
-            }
+            },
+            AvailableVersions = new List<string> { "3.2.1-beta", "3.2.0", "3.1.8" }
         };
 
         return View(demoStats);
     }
 
-    public async Task<IActionResult> Index(Guid projectId)
+    public async Task<IActionResult> Index(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
     {
         var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
-        var query = db.CrashReports.AsQueryable()
-            .Where(c => c.ProjectId == projectId);
+
+        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity);
+
+        // Get available versions for the dropdown
+        var allVersions = await query
+            .Select(c => c.AppVersion)
+            .Distinct()
+            .OrderByDescending(v => v)
+            .ToListAsync();
+
+        var totalSessions = await query
+            .Select(c => c.SessionId)
+            .Distinct()
+            .CountAsync();
 
         var stats = new DashboardStatsViewModel
         {
@@ -106,7 +120,12 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                 .OrderByDescending(c => c.Timestamp)
                 .Take(10)
                 .ToListAsync(),
-            ActiveUsersCount = 1284 // Mocked for UI
+            ActiveSessionsCount = totalSessions,
+            AvailableVersions = allVersions,
+            SelectedVersion = appVersion,
+            SelectedSeverity = severity,
+            SelectedPeriod = timePeriod,
+            CurrentProjectId = projectId
         };
 
         return View(stats);
@@ -130,5 +149,54 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
         ViewBag.AIAnalysis = await ai.AnalyzeCrashAsync(crash);
 
         return View(crash);
+    }
+
+    public async Task<IActionResult> ExportReport(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
+    {
+        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity);
+        var crashes = await query.OrderByDescending(c => c.Timestamp).ToListAsync();
+
+        var builder = new StringBuilder();
+        builder.AppendLine("ID,Timestamp,Severity,Exception,Message,AppVersion,OS,Device,User");
+
+        foreach (var crash in crashes)
+        {
+            // Escape commas for CSV safety
+            string safeMsg = crash.Message?.Replace(",", ";").Replace("\n", " ") ?? "";
+            builder.AppendLine($"{crash.Id},{crash.Timestamp:yyyy-MM-dd HH:mm:ss},{crash.Severity},{crash.ExceptionName},{safeMsg},{crash.AppVersion},{crash.OsVersion},{crash.DeviceModel},{crash.UserId}");
+        }
+
+        var fileName = $"Sentinel_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
+        return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", fileName);
+    }
+
+    private IQueryable<CrashReport> GetFilteredCrashesQuery(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
+    {
+        var query = db.CrashReports.AsQueryable();
+
+        query = query.Where(c => c.ProjectId == projectId);
+
+        // 2. Filter by Severity
+        if (severity.HasValue)
+            query = query.Where(c => c.Severity == severity.Value);
+
+        // 3. Filter by Version
+        if (!string.IsNullOrEmpty(appVersion) && appVersion != "All")
+            query = query.Where(c => c.AppVersion == appVersion);
+
+        // 4. Filter by Time Period
+        if (!string.IsNullOrEmpty(timePeriod))
+        {
+            var now = DateTime.UtcNow;
+            query = timePeriod switch
+            {
+                "last24h" => query.Where(c => c.Timestamp >= now.AddHours(-24)),
+                "last7d" => query.Where(c => c.Timestamp >= now.AddDays(-7)),
+                "last30d" => query.Where(c => c.Timestamp >= now.AddDays(-30)),
+                _ => query
+            };
+        }
+
+        return query;
     }
 }
