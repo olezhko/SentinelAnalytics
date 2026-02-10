@@ -37,7 +37,12 @@ namespace SentinelAnalytics.Controllers
         [HttpGet]
         public async Task<IActionResult> UserProfile()
         {
-            var projects = await _db.Projects.OrderByDescending(p => p.CreatedDate).ToListAsync();
+            var user = userManager.GetUserId(User);
+
+            var projects = await _db.Projects
+                .Where(p => p.UserId == user)
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
             return View("User", projects);
         }
 
