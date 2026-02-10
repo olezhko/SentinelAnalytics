@@ -1,0 +1,76 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="mb-10 flex items-center justify-between">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Identity & Profile</h1>
+            <p class="text-slate-500 font-medium">Manage your personal credentials and console preferences.</p>
+        </div>
+        <div class="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-600/20">
+            @Model.Username.Substring(0, 1).ToUpper()
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+        <!-- Navigation -->
+        <div class="lg:col-span-1">
+            <nav class="flex flex-col gap-1">
+                <a asp-page="./Index" class="px-5 py-3 rounded-xl text-sm font-black bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 transition-all">General Info</a>
+                @* <a asp-page="./Email" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Email Config</a>
+                <a asp-page="./ChangePassword" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Authentication</a>
+                <a asp-page="./TwoFactorAuthentication" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Security (2FA)</a>
+                <a asp-page="./PersonalData" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-rose-600 transition-all border border-transparent hover:border-slate-200">Compliance & Data</a> *@
+            </nav>
+        </div>
+
+        <!-- Form Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <form id="profile-form" method="post" class="space-y-8">
+                    <div asp-validation-summary="ModelOnly" class="text-rose-600 text-[11px] font-bold bg-rose-50 p-4 rounded-xl"></div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="space-y-1">
+                            <label asp-for="Username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"></label>
+                            <input asp-for="Username" class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-sm text-slate-500" disabled />
+                        </div>
+
+                        <div class="space-y-1">
+                            <label asp-for="Input.PhoneNumber" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"></label>
+                            <input asp-for="Input.PhoneNumber" class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all" placeholder="+1 (555) 000-0000" />
+                            <span asp-validation-for="Input.PhoneNumber" class="text-rose-500 text-[10px] font-bold"></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Changes are saved</p>
+                        <button id="update-profile-button" type="submit" class="px-8 py-3 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-600/10 hover:bg-indigo-500 transition-all">
+                            Save Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Additional Context Card -->
+            <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative">
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-indigo-600/20 rounded-full blur-3xl"></div>
+                <div class="relative z-10 flex items-center gap-6">
+                    <div class="text-3xl">🛡️</div>
+                    <div>
+                        <h4 class="font-bold text-lg">Enterprise Security</h4>
+                        <p class="text-slate-400 text-sm">Your account is protected by Sentinel's multi-tenant isolation layer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
