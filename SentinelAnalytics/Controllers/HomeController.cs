@@ -46,6 +46,19 @@ namespace SentinelAnalytics.Controllers
             return View("User", projects);
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteProject(Guid id)
+        {
+            var project = await _db.Projects.FindAsync(id);
+            if (project != null)
+            {
+                _db.Projects.Remove(project);
+                await _db.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(UserProfile));
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateProject(string name, string platform)

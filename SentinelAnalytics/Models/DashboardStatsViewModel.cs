@@ -8,6 +8,8 @@ public class DashboardStatsViewModel
     public required string ProjectName { get; set; }
     public int TotalCrashes { get; set; }
     public int ActiveSessionsCount { get; set; }
+    public int UniqueUsersImpacted { get; set; }
+    public double CrashFreeUserRate { get; set; }
     public List<DailyStat> DailyTrends { get; set; } = [];
     public List<CrashReport> RecentCrashes { get; set; } = [];
 
@@ -15,6 +17,8 @@ public class DashboardStatsViewModel
     public string? SelectedVersion { get; set; }
     public Severity? SelectedSeverity { get; set; }
     public string? SelectedPeriod { get; set; }
+    public string? SelectedResolution { get; set; } // "all", "resolved", "unresolved"
+    public string? SearchQuery { get; set; }
 }
 
 public class DailyStat

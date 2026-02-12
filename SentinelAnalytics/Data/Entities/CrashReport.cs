@@ -23,6 +23,12 @@ public class CrashReport
 
     public string? PropertiesJson { get; set; }
 
+
+    // Resolution Fields
+    public bool IsResolved { get; set; } = false;
+    public DateTime? ResolvedAt { get; set; }
+    public string? ResolutionComment { get; set; }
+
     [ForeignKey("ProjectId")]
     public virtual Project Project { get; set; } = null!;
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
 using SentinelAnalytics.Models;
+using SentinelAnalytics.Models.Dashboard;
 using SentinelAnalytics.Services;
 using System.Text;
 
@@ -89,11 +90,12 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
         return View(demoStats);
     }
 
-    public async Task<IActionResult> Index(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
+    public async Task<IActionResult> Index(Guid projectId, string? appVersion, string? timePeriod, Severity? severity, string? resolutionStatus,
+        string? searchQuery)
     {
         var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
 
-        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity);
+        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity, resolutionStatus, searchQuery);
 
         // Get available versions for the dropdown
         var allVersions = await query
@@ -102,15 +104,35 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
             .OrderByDescending(v => v)
             .ToListAsync();
 
-        var totalSessions = await query
+        var totalSessions = await db.MobileEvents
+            .Where(item => item.ProjectId ==  projectId)
             .Select(c => c.SessionId)
             .Distinct()
             .CountAsync();
 
+        var totalCrashes = await query.CountAsync();
+        var impactedUsers = await query.Select(c => c.UserId ?? c.SessionId).Distinct().CountAsync();
+        var estimatedActiveUsers = totalSessions;
+        var crashFreeRate = 100.0 - ((double)impactedUsers / estimatedActiveUsers * 100.0);
+        var recentCrashesRaw = await query.OrderByDescending(c => c.Timestamp).Take(50).ToListAsync();
+
+        // Group by Exception to find regressions/counts
+        var groupedCrashes = recentCrashesRaw
+            .GroupBy(c => c.ExceptionName)
+            .Select(g => new CrashReportSummary
+            {
+                Report = g.OrderByDescending(x => x.Timestamp).First(),
+                OccurrenceCount = g.Count(),
+                AffectedUsersCount = g.Select(x => x.UserId ?? x.SessionId).Distinct().Count(),
+                IsRegression = g.Any(x => x.IsResolved && x.Timestamp > (x.ResolvedAt ?? DateTime.MinValue))
+            }).ToList();
+
         var stats = new DashboardStatsViewModel
         {
+            TotalCrashes = totalCrashes,
+            UniqueUsersImpacted = impactedUsers,
+            CrashFreeUserRate = Math.Max(0, Math.Min(100, crashFreeRate)),
             ProjectName = project!.Name,
-            TotalCrashes = await query.CountAsync(),
             DailyTrends = await query
                 .GroupBy(c => c.Timestamp.Date)
                 .OrderBy(g => g.Key)
@@ -118,14 +140,16 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                 .ToListAsync(),
             RecentCrashes = await query
                 .OrderByDescending(c => c.Timestamp)
-                .Take(10)
+                .Take(25)
                 .ToListAsync(),
             ActiveSessionsCount = totalSessions,
             AvailableVersions = allVersions,
             SelectedVersion = appVersion,
             SelectedSeverity = severity,
             SelectedPeriod = timePeriod,
-            CurrentProjectId = projectId
+            SelectedResolution = resolutionStatus,
+            CurrentProjectId = projectId,
+            SearchQuery = searchQuery
         };
 
         return View(stats);
@@ -151,29 +175,46 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
         return View(crash);
     }
 
-    public async Task<IActionResult> ExportReport(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
+    [HttpPost]
+    public async Task<IActionResult> Resolve(Guid id, string comment)
     {
-        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity);
+        var crash = await db.CrashReports.FindAsync(id);
+        if (crash == null) return NotFound();
+
+        crash.IsResolved = true;
+        crash.ResolvedAt = DateTime.UtcNow;
+        crash.ResolutionComment = comment;
+
+        await db.SaveChangesAsync();
+
+        return RedirectToAction(nameof(CrashDetails), new { id = id });
+    }
+
+    public async Task<IActionResult> ExportReport(Guid projectId, string? appVersion, string? timePeriod, Severity? severity, string? resolutionStatus,
+        string? searchQuery)
+    {
+        var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity, resolutionStatus, searchQuery);
         var crashes = await query.OrderByDescending(c => c.Timestamp).ToListAsync();
 
         var builder = new StringBuilder();
-        builder.AppendLine("ID,Timestamp,Severity,Exception,Message,AppVersion,OS,Device,User");
+        builder.AppendLine("ID,Timestamp,Severity,Exception,Message,AppVersion,OS,Device,User,Resolved,ResolutionDate");
 
         foreach (var crash in crashes)
         {
-            // Escape commas for CSV safety
             string safeMsg = crash.Message?.Replace(",", ";").Replace("\n", " ") ?? "";
-            builder.AppendLine($"{crash.Id},{crash.Timestamp:yyyy-MM-dd HH:mm:ss},{crash.Severity},{crash.ExceptionName},{safeMsg},{crash.AppVersion},{crash.OsVersion},{crash.DeviceModel},{crash.UserId}");
+            builder.AppendLine($"{crash.Id},{crash.Timestamp:yyyy-MM-dd HH:mm:ss},{crash.Severity},{crash.ExceptionName},{safeMsg},{crash.AppVersion},{crash.OsVersion},{crash.DeviceModel},{crash.UserId},{crash.IsResolved},{crash.ResolvedAt:yyyy-MM-dd}");
         }
 
         var fileName = $"Sentinel_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
         return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", fileName);
     }
 
-    private IQueryable<CrashReport> GetFilteredCrashesQuery(Guid projectId, string? appVersion, string? timePeriod, Severity? severity)
+    private IQueryable<CrashReport> GetFilteredCrashesQuery(Guid projectId, string? appVersion, string? timePeriod, Severity? severity, string? resolutionStatus, 
+        string? searchQuery)
     {
         var query = db.CrashReports.AsQueryable();
 
+        // 1. Filter by Project
         query = query.Where(c => c.ProjectId == projectId);
 
         // 2. Filter by Severity
@@ -195,6 +236,29 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
                 "last30d" => query.Where(c => c.Timestamp >= now.AddDays(-30)),
                 _ => query
             };
+        }
+
+        // 5. Filter by Resolution Status
+        if (!string.IsNullOrEmpty(resolutionStatus))
+        {
+            query = resolutionStatus switch
+            {
+                "resolved" => query.Where(c => c.IsResolved),
+                "unresolved" => query.Where(c => !c.IsResolved),
+                _ => query
+            };
+        }
+
+        // 6. Search text across multiple fields
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            var lowerSearch = searchQuery.ToLower();
+            query = query.Where(c =>
+                c.ExceptionName.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                c.Message.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                c.StackTrace.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase) ||
+                (c.ResolutionComment != null && c.ResolutionComment.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase))
+            );
         }
 
         return query;
