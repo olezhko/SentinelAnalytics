@@ -5,84 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
 using SentinelAnalytics.Models;
+using SentinelAnalytics.Models.Projects;
 using System.Diagnostics;
 
 namespace SentinelAnalytics.Controllers
 {
-    public class HomeController(
-        UserManager<IdentityUser> userManager,
-        SentinelDbContext _db) : Controller
+    public class HomeController() : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        public IActionResult TermsOfService()
-        {
-            return View();
-        }
-
-        public IActionResult Support()
-        {
-            return View();
-        }
-
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> UserProfile()
-        {
-            var user = userManager.GetUserId(User);
-
-            var projects = await _db.Projects
-                .Where(p => p.UserId == user)
-                .OrderByDescending(p => p.CreatedDate)
-                .ToListAsync();
-            return View("User", projects);
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteProject(Guid id)
-        {
-            var project = await _db.Projects.FindAsync(id);
-            if (project != null)
-            {
-                _db.Projects.Remove(project);
-                await _db.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(UserProfile));
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> CreateProject(string name, string platform)
-        {
-            if (string.IsNullOrEmpty(name)) 
-                return BadRequest("Project name is required.");
-
-            var user = userManager.GetUserId(User)
-                ?? throw new InvalidDataException("User not login");
-
-            var newProject = new Project
-            {
-                UserId = user,
-                Name = name,
-                Platform = platform,
-                CreatedDate = DateTime.UtcNow
-            };
-
-            _db.Projects.Add(newProject);
-            await _db.SaveChangesAsync();
-
-            return RedirectToAction(nameof(UserProfile));
-        }
-
+        public IActionResult Index() => View();
+        public IActionResult Privacy() => View();
+        public IActionResult TermsOfService() => View();
+        public IActionResult Support() => View();
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

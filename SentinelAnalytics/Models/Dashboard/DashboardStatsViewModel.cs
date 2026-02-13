@@ -1,6 +1,6 @@
 ﻿using SentinelAnalytics.Data.Entities;
 
-namespace SentinelAnalytics.Models;
+namespace SentinelAnalytics.Models.Dashboard;
 
 public class DashboardStatsViewModel
 {

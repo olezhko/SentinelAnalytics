@@ -1,0 +1,108 @@
+﻿@using SentinelAnalytics.Data.Entities
+@using SentinelAnalytics.Models.Projects
+@model ProjectTeamViewModel
+@{
+    ViewData["Title"] = "Project Team";
+    Layout = "_Layout";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <!-- Profile Card -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-6">
+            <div class="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-indigo-600/20">
+                AD
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-slate-900">Admin Developer</h1>
+                <p class="text-slate-500 font-medium">admin@sentinel-analytics.io</p>
+                <div class="mt-2 flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider rounded border border-indigo-100">Enterprise</span>
+                    <span class="px-2 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded border border-slate-200">Authenticated</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button class="px-5 py-2.5 bg-rose-50 border border-rose-100 text-rose-600 font-bold text-sm rounded-xl hover:bg-rose-100 transition-all">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Invitations Section -->
+    @if (Model.PendingInvites.Any())
+    {
+        <div class="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-600/20 animate-in slide-in-from-top duration-500">
+            <div class="flex items-center gap-4 mb-6">
+                <span class="text-3xl">📩</span>
+                <div>
+                    <h3 class="text-xl font-black">Incoming Access Invites</h3>
+                    <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest">Action Required</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach (var invite in Model.PendingInvites)
+                {
+                    <div class="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-indigo-300">Project Invite</p>
+                            <h4 class="text-lg font-black">@invite.Project.Name</h4>
+                        </div>
+                        <form asp-action="AcceptInvite" method="post">
+                            <input type="hidden" name="inviteId" value="@invite.Id" />
+                            <button type="submit" class="bg-white text-indigo-600 px-6 py-2.5 rounded-xl text-xs font-black shadow-xl hover:bg-indigo-50 transition-all">
+                                Accept Joining
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Projects Section -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-black text-slate-900">Your Ecosystem (@Model.Memberships.Count)</h2>
+            <button onclick="document.getElementById('createProjectModal').classList.remove('hidden')" class="px-5 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-all">
+                + New Project
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var member in Model.Memberships)
+            {
+                <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-300 transition-all group flex flex-col h-full">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-xl border border-slate-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                @(member.Project.Platform == "iOS" ? "📱" : "🤖")
+                            </div>
+                            <span class="px-2 py-1 @(member.Role == ProjectRoleType.Manager ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-500") text-[8px] font-black uppercase tracking-widest rounded border border-slate-100">
+                                @member.Role
+                            </span>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">@member.Project.CreatedDate.ToString("MMM yyyy")</span>
+                    </div>
+
+                    <div class="flex-grow">
+                        <h3 class="text-xl font-black text-slate-900 mb-1">@member.Project.Name</h3>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">@member.Project.Platform Stack</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 mt-auto">
+                        <a asp-controller="Dashboard" asp-action="Index" asp-route-projectId="@member.Project.Id"
+                           class="flex-1 py-3 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-[0.1em] rounded-xl text-center shadow-lg hover:bg-indigo-500 transition-all">
+                            Console
+                        </a>
+                        @if (member.Role == ProjectRoleType.Manager)
+                        {
+                            <button type="button" onclick="openDeleteModal('@member.Project.Id', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(member.Project.Name))')"
+                                    class="flex-1 py-3 bg-white border border-rose-200 text-rose-600 text-[11px] font-black uppercase tracking-[0.1em] rounded-xl hover:bg-rose-50 transition-all">
+                                Remove
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

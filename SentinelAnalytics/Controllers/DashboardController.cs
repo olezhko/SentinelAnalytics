@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
-using SentinelAnalytics.Models;
 using SentinelAnalytics.Models.Dashboard;
 using SentinelAnalytics.Services;
 using System.Text;
@@ -11,7 +10,9 @@ using System.Text;
 namespace SentinelAnalytics.Controllers;
 
 [Authorize]
-public class DashboardController(SentinelDbContext db, IGeminiService ai) : Controller
+public class DashboardController(
+    SentinelDbContext db, 
+    IGeminiService ai) : Controller
 {
     [AllowAnonymous]
     public IActionResult Demo()
@@ -262,5 +263,21 @@ public class DashboardController(SentinelDbContext db, IGeminiService ai) : Cont
         }
 
         return query;
+    }
+
+    public async Task<IActionResult> Settings(Guid projectId)
+    {
+        var role = await GetUserProjectRole(projectId);
+        if (role != ProjectRoleType.Manager) return Forbid();
+
+        var project = await db.Projects.Include(p => p.Members).FirstOrDefaultAsync(p => p.Id == projectId);
+        return View(project);
+    }
+
+    private async Task<ProjectRoleType?> GetUserProjectRole(Guid projectId)
+    {
+        var userEmail = User.Identity?.Name ?? "admin@sentinel-analytics.io";
+        var membership = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.UserEmail == userEmail && m.IsAccepted);
+        return membership?.Role;
     }
 }

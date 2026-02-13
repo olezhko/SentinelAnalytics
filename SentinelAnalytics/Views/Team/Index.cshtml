@@ -1,0 +1,122 @@
+﻿@model Project
+@{
+    ViewData["Title"] = "Project Team";
+    Layout = "_Layout";
+    bool isManager = (bool)ViewBag.IsManager;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Back Navigation -->
+    <div class="flex items-center gap-3 mb-10">
+        <a asp-controller="Project" asp-action="Index" class="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Your Ecosystem</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-xs font-black text-slate-900 uppercase tracking-widest">@Model.Name</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-xs font-black text-slate-900 uppercase tracking-widest">Project Team</span>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-12">
+        <!-- Sidebar Info -->
+        <div class="space-y-6">
+            <div class="bg-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-indigo-600/30 rounded-full blur-3xl"></div>
+                <div class="relative z-10 space-y-6">
+                    <div class="w-16 h-16 bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center text-3xl">👥</div>
+                    <h2 class="text-2xl font-black">Team Control</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Manage who can access telemetry and configuration for the <span class="text-white font-bold">@Model.Name</span> project.
+                    </p>
+                    <div class="pt-4 space-y-2">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Project Policy</p>
+                        <p class="text-xs font-medium text-slate-300">Only Managers can invite or revoke access for Developers.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">API Metadata</h4>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-hidden">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Target Engine</p>
+                        <p class="text-sm font-bold text-slate-900">@Model.Platform</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-hidden">
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">API Key</p>
+                        <code class="text-[10px] font-mono text-indigo-600 truncate block">@Model.ApiKey</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-10">
+            <!-- Invite Section (Manager Only) -->
+            @if (isManager)
+            {
+                <div class="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                        <span>📧</span> Invite New Developer
+                    </h3>
+                    <form asp-action="InviteDeveloper" method="post" class="flex flex-col md:flex-row gap-4">
+                        <input type="hidden" name="projectId" value="@Model.Id" />
+                        <div class="flex-1">
+                            <input type="email" name="email" required placeholder="name@corporate.com"
+                                   class="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold transition-all" />
+                        </div>
+                        <button type="submit" class="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:bg-indigo-500 transition-all active:scale-[0.98]">
+                            Send Invite
+                        </button>
+                    </form>
+                    <p class="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1">
+                        Invited users will appear as "Pending" until they accept via their profile console.
+                    </p>
+                </div>
+            }
+
+            <!-- Members List -->
+            <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                    <h3 class="text-xl font-black text-slate-900">Project Personnel</h3>
+                    <span class="px-3 py-1 bg-slate-900 text-white text-[9px] font-black uppercase rounded-lg">@Model.Members.Count Total</span>
+                </div>
+                <div class="divide-y divide-slate-100">
+                    @foreach (var member in Model.Members.OrderByDescending(m => m.Role))
+                    {
+                        <div class="p-8 flex items-center justify-between group hover:bg-slate-50/50 transition-colors">
+                            <div class="flex items-center gap-6">
+                                <div class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-sm relative">
+                                    @(member.IsAccepted ? "👤" : "📧")
+                                    @if (!member.IsAccepted)
+                                    {
+                                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 border-2 border-white rounded-full"></div>
+                                    }
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-3">
+                                        <p class="text-base font-black text-slate-900">@member.UserEmail</p>
+                                        <span class="px-2 py-0.5 @(member.Role == ProjectRoleType.Manager ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-slate-100 text-slate-500 border-slate-200") text-[8px] font-black uppercase tracking-widest rounded border">
+                                            @member.Role
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                        @(member.IsAccepted ? $"Joined {member.JoinedAt!.Value.ToString("MMM dd, yyyy")}" : "Awaiting Acceptance")
+                                    </p>
+                                </div>
+                            </div>
+
+                            @if (isManager && member.Role != ProjectRoleType.Manager)
+                            {
+                                <form asp-action="RevokeAccess" method="post">
+                                    <input type="hidden" name="memberId" value="@member.Id" />
+                                    <button type="submit" class="text-rose-600 text-[10px] font-black uppercase tracking-widest hover:underline px-4 py-2 rounded-xl hover:bg-rose-50 transition-all">
+                                        Revoke Access
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

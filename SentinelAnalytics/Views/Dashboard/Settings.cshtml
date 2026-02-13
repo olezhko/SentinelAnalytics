@@ -1,0 +1,81 @@
+﻿@using SentinelAnalytics.Data.Entities
+@model Project
+@{
+    ViewData["Title"] = "Project Settings";
+    Layout = "_Layout";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex items-center gap-3 mb-10">
+        <a asp-action="Index" asp-route-projectId="@Model.Id" class="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Console</a>
+        <span class="text-slate-300">/</span>
+        <span class="text-xs font-black text-slate-900 uppercase tracking-widest">Settings</span>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+        <!-- Sidebar -->
+        <div class="space-y-4">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <nav class="flex flex-col gap-2">
+                    <button class="px-5 py-3 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest rounded-xl text-left">Team & Access</button>
+                    <button class="px-5 py-3 bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest rounded-xl text-left">API Integrity</button>
+                    <button class="px-5 py-3 bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest rounded-xl text-left">Retention</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="lg:col-span-2 space-y-10">
+            <!-- Team Management -->
+            <div class="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <h3 class="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                    <span>👥</span> Team Access Control
+                </h3>
+
+                <!-- Invite Form -->
+                <form asp-controller="Team" asp-action="InviteDeveloper" method="post" class="flex gap-4 mb-10">
+                    <input type="hidden" name="projectId" value="@Model.Id" />
+                    <input type="email" name="email" required placeholder="developer@partner.com" class="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
+                    <button type="submit" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all">
+                        Invite
+                    </button>
+                </form>
+
+                <!-- Members List -->
+                <div class="space-y-4">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Current Personnel</h4>
+                    @foreach (var member in Model.Members)
+                    {
+                        <div class="flex items-center justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2rem]">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-lg shadow-sm">
+                                    @(member.IsAccepted ? "👤" : "📧")
+                                </div>
+                                <div>
+                                    <p class="text-sm font-black text-slate-900">@member.UserEmail</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase">
+                                        @(member.IsAccepted ? "Active " + member.Role : "Pending Invitation")
+                                    </p>
+                                </div>
+                            </div>
+                            @if (member.Role != ProjectRoleType.Manager)
+                            {
+                                <button class="text-rose-600 text-xs font-black uppercase hover:underline">Revoke</button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- API Key Management -->
+            <div class="bg-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-48 h-48 bg-indigo-600/30 rounded-full blur-3xl"></div>
+                <h3 class="text-xl font-black mb-6 flex items-center gap-2"><span>🔑</span> Project Ingress Key</h3>
+                <div class="p-6 bg-white/10 border border-white/10 rounded-2xl font-mono text-xs text-indigo-300 break-all">
+                    @Model.ApiKey
+                </div>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-4">Required for Mobile SDK initialization</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -15,6 +15,7 @@ public class Project
 
     public virtual ICollection<CrashReport> Crashes { get; set; } = [];
     public virtual ICollection<MobileEvent> Events { get; set; } = [];
+    public virtual ICollection<ProjectMember> Members { get; set; } = [];
 
     public string? UserId { get; set; }
 

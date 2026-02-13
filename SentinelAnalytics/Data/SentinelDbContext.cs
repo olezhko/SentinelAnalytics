@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data.Entities;
 
@@ -15,6 +14,7 @@ namespace SentinelAnalytics.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<MobileEvent> MobileEvents { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
+        public DbSet<ProjectMember> ProjectMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
