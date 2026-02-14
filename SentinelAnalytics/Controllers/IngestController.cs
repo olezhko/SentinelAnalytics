@@ -11,6 +11,28 @@ namespace SentinelAnalytics.Controllers;
 [ApiController]
 public class IngestController(SentinelDbContext db) : ControllerBase
 {
+    [HttpGet("init")]
+    public async Task<IActionResult> Init([FromHeader(Name = "X-Sentinel-Key")] string apiKey)
+    {
+        var sessionId = Guid.NewGuid().ToString();
+
+        var project = await db.Projects.FirstOrDefaultAsync(p => p.ApiKey == apiKey);
+        if (project == null) return Unauthorized();
+
+        var mobileEvent = new MobileEvent()
+        {
+            ProjectId = project.Id,
+            EventName = "INIT",
+            SessionId = sessionId,
+            Timestamp = DateTime.UtcNow,
+        };
+
+        db.MobileEvents.Add(mobileEvent);
+        await db.SaveChangesAsync();
+
+        return Ok(sessionId);
+    }
+
     [HttpPost("crash")]
     public async Task<IActionResult> PostCrash([FromHeader(Name = "X-Sentinel-Key")] string apiKey, [FromBody] CrashReportDto report)
     {
@@ -29,7 +51,7 @@ public class IngestController(SentinelDbContext db) : ControllerBase
             Severity = report.Severity,
             StackTrace = report.StackTrace,
             Timestamp = DateTime.UtcNow,
-            UserId = report.UserId ?? string.Empty,
+            UserId = report.UserId,
             PropertiesJson = report.Properties != null ? JsonSerializer.Serialize(report.Properties) : null
         };
 

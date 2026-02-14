@@ -15,7 +15,8 @@
                 Secure your <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Mobile Team</span>.
             </h1>
             <p class="text-xl text-slate-400 max-w-lg">
-                The first collaborative analytics platform built specifically for .NET teams monitoring mission-critical mobile infrastructure.
+                The collaborative analytics platform built specifically for .NET teams monitoring mission-critical mobile infrastructure. 
+                Microsoft AppCenter analog.
             </p>
             <div class="flex flex-wrap gap-4">
                 <a asp-controller="Project" asp-action="Index" class="px-8 py-4 bg-indigo-600 rounded-2xl font-bold shadow-2xl hover:bg-indigo-500 transition-all transform hover:-translate-y-1">Initialize Project Console</a>
@@ -52,11 +53,16 @@
         <div class="text-center mb-16">
             <h2 class="text-3xl font-black text-slate-900">Enterprise Team Features</h2>
         </div>
-        <div class="grid md:grid-cols-4 gap-12">
+        <div class="grid md:grid-cols-3 gap-12">
+            <div class="space-y-4">
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">⚡</div>
+                <h4 class="text-xl font-bold text-slate-900">Quick Integration</h4>
+                <p class="text-slate-500">Start tracking analytics and crashes in minutes with minimal configuration.</p>
+            </div>
             <div class="space-y-4">
                 <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">👥</div>
-                <h4 class="text-xl font-bold text-slate-900">Team Membership</h4>
-                <p class="text-slate-500">Invite developers to your projects via email and manage access permissions with role-based controls.</p>
+                <h4 class="text-xl font-bold text-slate-900">Team Management</h4>
+                <p class="text-slate-500">Invite members via email and manage roles seamlessly.</p>
             </div>
             <div class="space-y-4">
                 <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">🌐</div>
@@ -64,14 +70,19 @@
                 <p class="text-slate-500">Automatically tie mobile user events to server-side logs using Session IDs.</p>
             </div>
             <div class="space-y-4">
-                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 text-xl font-bold">✨</div>
-                <h4 class="text-xl font-bold text-slate-900">Gemini AI</h4>
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">✨</div>
+                <h4 class="text-xl font-bold text-slate-900">AI-Powered Analysis</h4>
                 <p class="text-slate-500">Gemini AI analyzes stack traces and provides ready-to-paste C# code snippets.</p>
             </div>
             <div class="space-y-4">
-                <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600 text-xl font-bold">🛡️</div>
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">🛡️</div>
                 <h4 class="text-xl font-bold text-slate-900">Role-Based Security</h4>
                 <p class="text-slate-500">Assign Manager or Developer roles to enforce data sovereignty and administrative boundaries.</p>
+            </div>
+            <div class="space-y-4">
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 text-xl font-bold">📊</div>
+                <h4 class="text-xl font-bold text-slate-900">Application Metrics</h4>
+                <p class="text-slate-500">Track and compare application metrics for every release.</p>
             </div>
         </div>
     </div>

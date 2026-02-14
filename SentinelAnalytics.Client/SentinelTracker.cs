@@ -3,32 +3,32 @@
 public static class SentinelTracker
 {
     private static SentinelHttpClient? _client;
+    public static string SessionId { get; private set; } = null!;
 
     public static void Initialize(string productKey)
     {
         _client = new SentinelHttpClient(productKey);
     }
 
+    private static async Task<string> InitSessionAsync() => await _client!.InitSessionAsync();
+
     public static async Task TrackErrorAsync(
         Exception ex,
-        string sessionId,
-        string? userId = null,
-        string severity = "Error", 
-        IDictionary<string, object> properties = null)
+        IDictionary<string, object>? properties = null)
     {
-        EnsureInitialized();
+        await EnsureInitialized();
 
         var dto = new CrashReportDto
         {
-            SessionId = sessionId,
+            SessionId = SessionId,
             ExceptionName = ex.GetType().Name,
             Message = ex.Message,
             StackTrace = ex.StackTrace ?? string.Empty,
-            Severity = severity,
+            Severity = "Error",
             AppVersion = AppInfo.VersionString,
             OsVersion = DeviceInfoProvider.GetOsVersion(),
             DeviceModel = DeviceInfoProvider.GetDeviceModel(),
-            UserId = userId,
+            UserId = null,
             Properties = properties
         };
 
@@ -37,24 +37,25 @@ public static class SentinelTracker
 
     public static async Task TrackEventAsync(
         string eventName,
-        string sessionId,
-        IDictionary<string, object> properties = null)
+        IDictionary<string, object>? properties = null)
     {
-        EnsureInitialized();
+        await EnsureInitialized();
 
         var dto = new MobileEventDto
         {
             EventName = eventName,
-            SessionId = sessionId,
+            SessionId = SessionId,
             Properties = properties
         };
 
         await _client!.SendEventAsync(dto);
     }
 
-    private static void EnsureInitialized()
+    private static async Task EnsureInitialized()
     {
         if (_client == null)
-            throw new InvalidOperationException("SentinelAnalytics.Initialize() was not called.");
+            throw new InvalidOperationException("SentinelTracker.Initialize() was not called.");
+
+        SessionId = await InitSessionAsync();
     }
 }

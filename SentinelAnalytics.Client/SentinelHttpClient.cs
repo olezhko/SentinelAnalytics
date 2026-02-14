@@ -17,7 +17,7 @@ internal sealed class SentinelHttpClient
         _http.DefaultRequestHeaders.Add("X-Sentinel-Key", projectApiKey);
     }
 
-    public async Task SendCrashAsync(CrashReportDto dto)
+    internal async Task SendCrashAsync(CrashReportDto dto)
     {
         try
         {
@@ -29,7 +29,7 @@ internal sealed class SentinelHttpClient
         }
     }
 
-    public async Task SendEventAsync(MobileEventDto dto)
+    internal async Task SendEventAsync(MobileEventDto dto)
     {
         try
         {
@@ -38,6 +38,21 @@ internal sealed class SentinelHttpClient
         }
         catch (Exception)
         {
+        }
+    }
+
+    internal async Task<string> InitSessionAsync()
+    {
+        try
+        {
+            var response = await _http.GetAsync("init");
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception)
+        {
+            return new Guid().ToString();
         }
     }
 }

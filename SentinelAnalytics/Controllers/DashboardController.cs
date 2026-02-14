@@ -131,7 +131,7 @@ public class DashboardController(
         var stats = new DashboardStatsViewModel
         {
             TotalCrashes = totalCrashes,
-            UniqueUsersImpacted = impactedUsers,
+            UniqueSessionsImpacted = impactedUsers,
             CrashFreeUserRate = Math.Max(0, Math.Min(100, crashFreeRate)),
             ProjectName = project!.Name,
             DailyTrends = await query

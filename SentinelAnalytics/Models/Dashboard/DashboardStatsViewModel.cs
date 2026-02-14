@@ -8,7 +8,7 @@ public class DashboardStatsViewModel
     public required string ProjectName { get; set; }
     public int TotalCrashes { get; set; }
     public int ActiveSessionsCount { get; set; }
-    public int UniqueUsersImpacted { get; set; }
+    public int UniqueSessionsImpacted { get; set; }
     public double CrashFreeUserRate { get; set; }
     public List<DailyStat> DailyTrends { get; set; } = [];
     public List<CrashReport> RecentCrashes { get; set; } = [];
