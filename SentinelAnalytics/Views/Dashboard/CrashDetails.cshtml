@@ -130,7 +130,7 @@
                         <button onclick="navigator.clipboard.writeText(document.getElementById('stackPre').innerText)" class="text-indigo-400 text-[10px] font-bold hover:underline">Copy Full Trace</button>
                     </div>
                     <div class="p-10">
-                        <pre id="stackPre" class="font-mono text-xs text-indigo-300 overflow-x-auto leading-relaxed whitespace-pre selection:bg-indigo-500 selection:text-white">@Model.StackTrace</pre>
+                        <pre id="stackPre" class="font-mono text-xs text-indigo-300 overflow-x-auto leading-relaxed whitespace-pre-wrap break-words selection:bg-indigo-500 selection:text-white">@Model.StackTrace</pre>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
@@ -12,6 +13,7 @@ namespace SentinelAnalytics.Controllers;
 [Authorize]
 public class DashboardController(
     SentinelDbContext db, 
+    UserManager<IdentityUser> userManager,
     IGeminiService ai) : Controller
 {
     [AllowAnonymous]
@@ -96,6 +98,11 @@ public class DashboardController(
     {
         var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
 
+        if (!await IsUserInProjectTeam(project!))
+        {
+            return Forbid();
+        }
+
         var query = GetFilteredCrashesQuery(projectId, appVersion, timePeriod, severity, resolutionStatus, searchQuery);
 
         // Get available versions for the dropdown
@@ -106,7 +113,7 @@ public class DashboardController(
             .ToListAsync();
 
         var totalSessions = await db.MobileEvents
-            .Where(item => item.ProjectId ==  projectId)
+            .Where(item => item.ProjectId == projectId)
             .Select(c => c.SessionId)
             .Distinct()
             .CountAsync();
@@ -154,6 +161,14 @@ public class DashboardController(
         };
 
         return View(stats);
+    }
+
+    private async Task<bool> IsUserInProjectTeam(Project project)
+    {
+        var userId = userManager.GetUserId(User);
+
+        return await db.ProjectMembers.AnyAsync(item => item.ProjectId == project.Id
+            && item.UserId == userId);
     }
 
     public async Task<IActionResult> CrashDetails(Guid id)

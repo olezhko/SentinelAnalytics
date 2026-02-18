@@ -12,6 +12,20 @@ public static class SentinelTracker
 
     private static async Task<string> InitSessionAsync() => await _client!.InitSessionAsync();
 
+    public static void TrackError(
+        Exception ex,
+        IDictionary<string, object>? properties = null)
+    {
+        _ = Task.Run(() => TrackErrorAsync(ex, properties));
+    }
+
+    public static void TrackEvent(
+        string eventName,
+        IDictionary<string, object>? properties = null)
+    {
+        _ = Task.Run(() => TrackEventAsync(eventName, properties));
+    }
+
     public static async Task TrackErrorAsync(
         Exception ex,
         IDictionary<string, object>? properties = null)
@@ -57,5 +71,10 @@ public static class SentinelTracker
             throw new InvalidOperationException("SentinelTracker.Initialize() was not called.");
 
         SessionId = await InitSessionAsync();
+    }
+
+    public static void GenerateTestCrash()
+    {
+        throw new TestCrashException();
     }
 }

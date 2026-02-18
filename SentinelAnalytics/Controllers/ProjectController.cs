@@ -63,8 +63,10 @@ namespace SentinelAnalytics.Controllers
             if (invite == null)
                 return NotFound();
 
+            var userId = userManager.GetUserId(User);
             invite.IsAccepted = true;
             invite.JoinedAt = DateTime.UtcNow;
+            invite.UserId = userId;
             await _db.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -114,6 +116,7 @@ namespace SentinelAnalytics.Controllers
                 UserEmail = userEmail,
                 Role = ProjectRoleType.Manager,
                 IsAccepted = true,
+                UserId = user,
                 JoinedAt = DateTime.UtcNow
             };
             _db.ProjectMembers.Add(member);
