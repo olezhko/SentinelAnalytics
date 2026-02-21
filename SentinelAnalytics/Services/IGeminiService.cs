@@ -22,7 +22,7 @@ public class GeminiService(HttpClient httpClient, IConfiguration configuration) 
                 Exception: {crash.ExceptionName}
                 Message: {crash.Message}
                 Stack: {crash.StackTrace}
-                Device: {crash.DeviceModel} ({crash.OsVersion})";
+                Device: {crash.Session.DeviceModel} ({crash.Session.OsVersion})";
 
         var requestBody = new
         {

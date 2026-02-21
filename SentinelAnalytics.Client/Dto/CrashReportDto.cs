@@ -1,15 +1,12 @@
-﻿namespace SentinelAnalytics.Maui;
+﻿namespace SentinelAnalytics.MAUI.Dto;
 
-public sealed class CrashReportDto
+internal sealed class CrashReportDto
 {
     public required string SessionId { get; init; }
+    public string Severity { get; init; } = "Error";
     public required string ExceptionName { get; init; }
     public required string Message { get; init; }
     public required string StackTrace { get; init; }
-    public required string AppVersion { get; init; }
-    public required string OsVersion { get; init; }
-    public required string DeviceModel { get; init; }
-    public string Severity { get; init; } = "Error";
     public string? UserId { get; init; }
     public IDictionary<string, object>? Properties { get; init; }
 }

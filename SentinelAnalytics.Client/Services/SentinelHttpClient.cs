@@ -1,6 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using SentinelAnalytics.MAUI.Dto;
+using System.Net.Http.Json;
 
-namespace SentinelAnalytics.Maui;
+namespace SentinelAnalytics.MAUI.Services;
 
 internal sealed class SentinelHttpClient
 {
@@ -41,11 +42,11 @@ internal sealed class SentinelHttpClient
         }
     }
 
-    internal async Task<string> InitSessionAsync()
+    internal async Task<string> InitSessionAsync(InitSessionDto dto)
     {
         try
         {
-            var response = await _http.GetAsync("init");
+            var response = await _http.PostAsJsonAsync("init", dto);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();

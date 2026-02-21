@@ -12,9 +12,11 @@ namespace SentinelAnalytics.Data
         }
 
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectMember> ProjectMembers { get; set; }
+
+        public DbSet<Session> Sessions { get; set; }
         public DbSet<MobileEvent> MobileEvents { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
-        public DbSet<ProjectMember> ProjectMembers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

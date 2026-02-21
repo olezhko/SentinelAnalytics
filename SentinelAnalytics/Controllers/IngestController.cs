@@ -12,25 +12,26 @@ namespace SentinelAnalytics.Controllers;
 public class IngestController(SentinelDbContext db) : ControllerBase
 {
     [HttpGet("init")]
-    public async Task<IActionResult> Init([FromHeader(Name = "X-Sentinel-Key")] string apiKey)
+    public async Task<IActionResult> Init([FromHeader(Name = "X-Sentinel-Key")] string apiKey, InitSessionDto dto)
     {
-        var sessionId = Guid.NewGuid().ToString();
-
         var project = await db.Projects.FirstOrDefaultAsync(p => p.ApiKey == apiKey);
         if (project == null) return Unauthorized();
 
-        var mobileEvent = new MobileEvent()
+        var session = new Session()
         {
-            ProjectId = project.Id,
-            EventName = "INIT",
-            SessionId = sessionId,
-            Timestamp = DateTime.UtcNow,
+            AppVersion = dto.AppVersion,
+            DeviceModel = dto.DeviceModel,
+            OsVersion = dto.OsVersion,
+            Country = dto.Country,
+            Language = dto.Language,
+            DeviceId = dto.DeviceId,
+            ProjectId = project.Id
         };
 
-        db.MobileEvents.Add(mobileEvent);
+        db.Sessions.Add(session);
         await db.SaveChangesAsync();
 
-        return Ok(sessionId);
+        return Ok(session.Id);
     }
 
     [HttpPost("crash")]
@@ -42,11 +43,8 @@ public class IngestController(SentinelDbContext db) : ControllerBase
         var newReport = new CrashReport()
         {
             ProjectId = project.Id,
-            AppVersion = report.AppVersion,
-            DeviceModel = report.DeviceModel,
             ExceptionName = report.ExceptionName,
             Message = report.Message,
-            OsVersion = report.OsVersion,
             SessionId = report.SessionId,
             Severity = report.Severity,
             StackTrace = report.StackTrace,
@@ -57,6 +55,7 @@ public class IngestController(SentinelDbContext db) : ControllerBase
 
         db.CrashReports.Add(newReport);
         await db.SaveChangesAsync();
+
         return Ok();
     }
 
@@ -77,6 +76,7 @@ public class IngestController(SentinelDbContext db) : ControllerBase
 
         db.MobileEvents.Add(mobileEvent);
         await db.SaveChangesAsync();
+
         return Ok();
     }
 }

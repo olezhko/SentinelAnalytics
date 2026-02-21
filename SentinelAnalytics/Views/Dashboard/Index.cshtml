@@ -6,10 +6,19 @@
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <nav class="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+            <a asp-controller="Analytics" asp-action="Index" asp-route-projectId="@Model.CurrentProjectId" class="hover:text-indigo-600 transition-colors">Analytics</a>
+            <span>/</span>
+            <span class="text-slate-900">Crashes</span>
+        </nav>
+    </div>
+
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
         <div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tight">@Model.ProjectName - Project Overview</h1>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">@Model.ProjectName - Crashes Overview</h1>
             <p class="text-slate-500 font-medium">Monitoring platform health and stability</p>
         </div>
         <div class="flex gap-3">
@@ -18,7 +27,6 @@
             </button>
         </div>
     </div>
-
 
     <!-- Stability Banner -->
     <div class="mb-12 bg-white p-10 rounded-[3rem] border border-slate-200 shadow-xl flex flex-col lg:flex-row items-center gap-12 relative overflow-hidden">
@@ -205,7 +213,7 @@
                         {
                             <tr class="hover:bg-slate-50/80 transition-colors cursor-pointer group">
                                 <td class="px-6 py-4"
-                                    onclick="openCrashModal('@crash.Id', '@crash.ExceptionName', '@crash.Message', '@crash.AppVersion', '@crash.OsVersion', '@crash.DeviceModel', '@crash.Timestamp.ToString("g")', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(crash.StackTrace))')">
+                                    onclick="openCrashModal('@crash.Id', '@crash.ExceptionName', '@crash.Message', '@crash.Session.AppVersion', '@crash.Session.OsVersion', '@crash.Session.DeviceModel', '@crash.Timestamp.ToString("g")', '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(crash.StackTrace))')">
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 rounded-full @(crash.Severity == Severity.Critical ? "bg-rose-500" : "bg-amber-500")"></div>
 
@@ -221,11 +229,11 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-xs font-bold text-slate-600">@crash.AppVersion</td>
+                                <td class="px-6 py-4 text-xs font-bold text-slate-600">@crash.Session.AppVersion</td>
                                 <td class="px-8 py-5">
                                     <div class="flex flex-col">
-                                        <span class="text-[11px] font-bold text-slate-700">@crash.DeviceModel</span>
-                                        <span class="text-[10px] text-slate-400 font-medium">@crash.OsVersion</span>
+                                        <span class="text-[11px] font-bold text-slate-700">@crash.Session.DeviceModel</span>
+                                        <span class="text-[10px] text-slate-400 font-medium">@crash.Session.OsVersion</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-[11px] text-slate-400 font-mono">@crash.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>

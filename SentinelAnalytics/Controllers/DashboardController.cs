@@ -39,49 +39,69 @@ public class DashboardController(
             RecentCrashes = new List<CrashReport>
             {
                 new CrashReport {
-                    SessionId = Guid.NewGuid().ToString(),
+                    SessionId = Guid.NewGuid(),
+                    Session = new Session {
+                        DeviceId = "abc123",
+                        Country = "USA",
+                        Language = "en",
+                        AppVersion = "3.2.0",
+                        OsVersion = "iOS 17.5.1",
+                        DeviceModel = "iPhone 15 Pro"
+                    },
                     Id = Guid.NewGuid(),
                     ExceptionName = "NullReferenceException",
                     Message = "Object reference not set to an instance of an object at PaymentGateway.AuthorizeTransaction",
-                    AppVersion = "3.2.0",
-                    OsVersion = "iOS 17.5.1",
-                    DeviceModel = "iPhone 15 Pro",
                     Timestamp = DateTime.UtcNow.AddMinutes(-12),
                     Severity = Severity.Critical,
                     StackTrace = "at Sentinel.Mobile.PaymentGateway.AuthorizeTransaction(Amount val) in Gateway.cs:line 442\nat Sentinel.Mobile.Checkout.Confirm() in CheckoutViewModel.cs:line 89"
                 },
                 new CrashReport {
-                    SessionId = Guid.NewGuid().ToString(),
+                    SessionId = Guid.NewGuid(),
+                    Session = new Session {
+                        DeviceId = "def456",
+                        Country = "Germany",
+                        Language = "de",
+                        AppVersion = "3.1.8",
+                        OsVersion = "Android 14",
+                        DeviceModel = "Google Pixel 8 Pro"
+                    },
                     Id = Guid.NewGuid(),
                     ExceptionName = "SQLiteException",
                     Message = "Database is locked. Unable to perform write operation during sync.",
-                    AppVersion = "3.1.8",
-                    OsVersion = "Android 14",
-                    DeviceModel = "Google Pixel 8 Pro",
                     Timestamp = DateTime.UtcNow.AddHours(-2),
                     Severity = Severity.Error,
                     StackTrace = "at Microsoft.Data.Sqlite.SqliteException.ThrowExceptionForRC(Int32 rc, sqlite3 db)\nat Microsoft.Data.Sqlite.SqliteCommand.ExecuteNonQuery()"
                 },
                 new CrashReport {
-                    SessionId = Guid.NewGuid().ToString(),
+                    SessionId = Guid.NewGuid(),
+                    Session = new Session {
+                        DeviceId = "ghi789",
+                        Country = "Japan",
+                        Language = "ja",
+                        AppVersion = "3.2.1-beta",
+                        OsVersion = "Android 13",
+                        DeviceModel = "Sony Xperia 1 IV"
+                    },
                     Id = Guid.NewGuid(),
                     ExceptionName = "IndexOutOfRangeException",
                     Message = "Index was outside the bounds of the array at FeedAdapter.OnBindViewHolder",
-                    AppVersion = "3.2.0",
-                    OsVersion = "Android 13",
-                    DeviceModel = "Samsung Galaxy S23",
                     Timestamp = DateTime.UtcNow.AddHours(-5),
                     Severity = Severity.Warning,
                     StackTrace = "at Sentinel.Mobile.Adapters.FeedAdapter.OnBindViewHolder(ViewHolder holder, Int32 position)\nat Android.Widget.RecyclerView.Bind()"
                 },
                 new CrashReport {
-                    SessionId = Guid.NewGuid().ToString(),
+                    SessionId = Guid.NewGuid(),
+                    Session = new Session {
+                        DeviceId = "jkl012",
+                        Country = "UK",
+                        Language = "en",
+                        AppVersion = "3.2.1-beta",
+                        OsVersion = "iOS 18.0",
+                        DeviceModel = "iPad Pro M4"
+                    },
                     Id = Guid.NewGuid(),
                     ExceptionName = "TaskCanceledException",
                     Message = "A task was canceled while waiting for the ImageBuffer to flush.",
-                    AppVersion = "3.2.1-beta",
-                    OsVersion = "iOS 18.0",
-                    DeviceModel = "iPad Pro M4",
                     Timestamp = DateTime.UtcNow.AddHours(-8),
                     Severity = Severity.Info,
                     StackTrace = "at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)\nat Sentinel.Mobile.Media.ImageLoader.LoadAsync(String url)"
@@ -107,7 +127,7 @@ public class DashboardController(
 
         // Get available versions for the dropdown
         var allVersions = await query
-            .Select(c => c.AppVersion)
+            .Select(c => c.Session.AppVersion)
             .Distinct()
             .OrderByDescending(v => v)
             .ToListAsync();
@@ -119,7 +139,7 @@ public class DashboardController(
             .CountAsync();
 
         var totalCrashes = await query.CountAsync();
-        var impactedUsers = await query.Select(c => c.UserId ?? c.SessionId).Distinct().CountAsync();
+        var impactedUsers = await query.Select(c => c.UserId ?? c.Session.DeviceId).Distinct().CountAsync();
         var estimatedActiveUsers = totalSessions;
         var crashFreeRate = 100.0 - ((double)impactedUsers / estimatedActiveUsers * 100.0);
         var recentCrashesRaw = await query.OrderByDescending(c => c.Timestamp).Take(50).ToListAsync();
@@ -131,7 +151,7 @@ public class DashboardController(
             {
                 Report = g.OrderByDescending(x => x.Timestamp).First(),
                 OccurrenceCount = g.Count(),
-                AffectedUsersCount = g.Select(x => x.UserId ?? x.SessionId).Distinct().Count(),
+                AffectedUsersCount = g.Select(x => x.UserId ?? x.Session.DeviceId).Distinct().Count(),
                 IsRegression = g.Any(x => x.IsResolved && x.Timestamp > (x.ResolvedAt ?? DateTime.MinValue))
             }).ToList();
 
@@ -175,12 +195,14 @@ public class DashboardController(
     {
         var crash = await db.CrashReports
             .Include(c => c.Project)
+            .Include(c => c.Session)
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (crash == null) return NotFound();
 
-        // KEY FEATURE: Correlate all events during the session
-        var sessionBreadcrumbs = await db.MobileEvents
+        var sessionBreadcrumbs = await db.MobileEvents.AsNoTracking()
+            .Include(c => c.Session)
             .Where(e => e.SessionId == crash.SessionId && e.Timestamp <= crash.Timestamp)
             .OrderBy(e => e.Timestamp)
             .ToListAsync();
@@ -218,7 +240,7 @@ public class DashboardController(
         foreach (var crash in crashes)
         {
             string safeMsg = crash.Message?.Replace(",", ";").Replace("\n", " ") ?? "";
-            builder.AppendLine($"{crash.Id},{crash.Timestamp:yyyy-MM-dd HH:mm:ss},{crash.Severity},{crash.ExceptionName},{safeMsg},{crash.AppVersion},{crash.OsVersion},{crash.DeviceModel},{crash.UserId},{crash.IsResolved},{crash.ResolvedAt:yyyy-MM-dd}");
+            builder.AppendLine($"{crash.Id},{crash.Timestamp:yyyy-MM-dd HH:mm:ss},{crash.Severity},{crash.ExceptionName},{safeMsg},{crash.Session.AppVersion},{crash.Session.OsVersion},{crash.Session.DeviceModel},{crash.UserId},{crash.IsResolved},{crash.ResolvedAt:yyyy-MM-dd}");
         }
 
         var fileName = $"Sentinel_Report_{DateTime.UtcNow:yyyyMMdd_HHmm}.csv";
@@ -228,7 +250,10 @@ public class DashboardController(
     private IQueryable<CrashReport> GetFilteredCrashesQuery(Guid projectId, string? appVersion, string? timePeriod, Severity? severity, string? resolutionStatus, 
         string? searchQuery)
     {
-        var query = db.CrashReports.AsQueryable();
+        var query = db.CrashReports
+            .Include(c => c.Session)
+            .AsNoTracking()
+            .AsQueryable();
 
         // 1. Filter by Project
         query = query.Where(c => c.ProjectId == projectId);
@@ -239,7 +264,7 @@ public class DashboardController(
 
         // 3. Filter by Version
         if (!string.IsNullOrEmpty(appVersion) && appVersion != "All")
-            query = query.Where(c => c.AppVersion == appVersion);
+            query = query.Where(c => c.Session.AppVersion == appVersion);
 
         // 4. Filter by Time Period
         if (!string.IsNullOrEmpty(timePeriod))
@@ -285,14 +310,21 @@ public class DashboardController(
         var role = await GetUserProjectRole(projectId);
         if (role != ProjectRoleType.Manager) return Forbid();
 
-        var project = await db.Projects.Include(p => p.Members).FirstOrDefaultAsync(p => p.Id == projectId);
+        var project = await db.Projects
+            .AsNoTracking()
+            .Include(p => p.Members)
+            .FirstOrDefaultAsync(p => p.Id == projectId);
+
         return View(project);
     }
 
     private async Task<ProjectRoleType?> GetUserProjectRole(Guid projectId)
     {
-        var userEmail = User.Identity?.Name ?? "admin@sentinel-analytics.io";
-        var membership = await db.ProjectMembers.FirstOrDefaultAsync(m => m.ProjectId == projectId && m.UserEmail == userEmail && m.IsAccepted);
+        var userEmail = User.Identity?.Name;
+        var membership = await db.ProjectMembers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.ProjectId == projectId && m.UserEmail == userEmail && m.IsAccepted);
+
         return membership?.Role;
     }
 }

@@ -1,4 +1,8 @@
-﻿namespace SentinelAnalytics.Maui;
+﻿using SentinelAnalytics.MAUI.Dto;
+using SentinelAnalytics.MAUI.Exceptions;
+using SentinelAnalytics.MAUI.Services;
+
+namespace SentinelAnalytics.Maui;
 
 public static class SentinelTracker
 {
@@ -10,7 +14,20 @@ public static class SentinelTracker
         _client = new SentinelHttpClient(productKey);
     }
 
-    private static async Task<string> InitSessionAsync() => await _client!.InitSessionAsync();
+    private static async Task<string> InitSessionAsync()
+    {
+        var dto = new InitSessionDto
+        {
+            DeviceId = DeviceInfoProvider.GetDeviceId(),
+            Country = DeviceInfoProvider.GetCountry(),
+            Language = DeviceInfoProvider.GetLanguage(),
+            AppVersion = AppInfo.VersionString,
+            OsVersion = DeviceInfoProvider.GetOsVersion(),
+            DeviceModel = DeviceInfoProvider.GetDeviceModel(),
+        };
+
+        return await _client!.InitSessionAsync(dto);
+    }
 
     public static void TrackError(
         Exception ex,
@@ -39,9 +56,6 @@ public static class SentinelTracker
             Message = ex.Message,
             StackTrace = ex.StackTrace ?? string.Empty,
             Severity = "Error",
-            AppVersion = AppInfo.VersionString,
-            OsVersion = DeviceInfoProvider.GetOsVersion(),
-            DeviceModel = DeviceInfoProvider.GetDeviceModel(),
             UserId = null,
             Properties = properties
         };

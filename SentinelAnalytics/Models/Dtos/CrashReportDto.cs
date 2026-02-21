@@ -5,7 +5,7 @@ namespace SentinelAnalytics.Models.Dtos
 {
     public sealed class CrashReportDto
     {
-        public required string SessionId { get; set; }
+        public required Guid SessionId { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public Severity Severity { get; set; }
@@ -14,9 +14,6 @@ namespace SentinelAnalytics.Models.Dtos
         public required string Message { get; set; }
         public required string StackTrace { get; set; }
 
-        public required string AppVersion { get; set; }
-        public required string OsVersion { get; set; }
-        public required string DeviceModel { get; set; }
         public string? UserId { get; set; }
 
         public Dictionary<string, string>? Properties { get; set; }

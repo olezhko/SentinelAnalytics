@@ -1,6 +1,6 @@
-﻿namespace SentinelAnalytics.Maui;
+﻿namespace SentinelAnalytics.MAUI.Dto;
 
-public sealed class MobileEventDto
+internal sealed class MobileEventDto
 {
     public required string EventName { get; init; }
     public required string SessionId { get; init; }

@@ -17,7 +17,7 @@ public class Project
     public virtual ICollection<MobileEvent> Events { get; set; } = [];
     public virtual ICollection<ProjectMember> Members { get; set; } = [];
 
-    public string? UserId { get; set; }
+    public required string UserId { get; set; }
 
     [ForeignKey("UserId")]
     public virtual IdentityUser User { get; set; } = null!;

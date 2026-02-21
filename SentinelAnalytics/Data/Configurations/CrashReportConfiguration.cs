@@ -40,18 +40,6 @@ public sealed class CrashReportConfiguration : IEntityTypeConfiguration<CrashRep
             .IsRequired()
             .HasMaxLength(8000);
 
-        builder.Property(x => x.AppVersion)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.Property(x => x.OsVersion)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(x => x.DeviceModel)
-            .IsRequired()
-            .HasMaxLength(100);
-
         builder.Property(x => x.UserId)
             .HasMaxLength(100);
 

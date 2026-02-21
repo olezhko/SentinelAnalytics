@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SentinelAnalytics.Maui;
+namespace SentinelAnalytics.MAUI.Exceptions;
 
 //
 // Summary:
