@@ -23,6 +23,10 @@ Sentinel is the enterprise-grade analytics engine for mobile teams. Track every 
     catch (Exception ex)
     {
         await SentinelTracker.TrackErrorAsync(ex, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
+        // or
+        SentinelTracker.TrackError(ex, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
     }
     
     await SentinelTracker.TrackEventAsync(text, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
+    // or
+    SentinelTracker.TrackEvent(text, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
