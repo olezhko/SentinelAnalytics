@@ -6,7 +6,8 @@ https://analytics-mobile.com/
 
 Sentinel is the enterprise-grade analytics engine for mobile teams. Track every event, catch every crash, and fix issues faster with AI.
 
-# Last version 1.0.1
+# Last version 1.0.5
+    dotnet add package SentinelAnalytics.MAUI
 
 # How to Use
 
@@ -22,6 +23,10 @@ Sentinel is the enterprise-grade analytics engine for mobile teams. Track every 
     catch (Exception ex)
     {
         await SentinelTracker.TrackErrorAsync(ex, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
+        // or
+        SentinelTracker.TrackError(ex, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
     }
     
     await SentinelTracker.TrackEventAsync(text, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
+    // or
+    SentinelTracker.TrackEvent(text, properties: (IDictionary<string, object>)properties, sessionId: SessionId.ToString());
