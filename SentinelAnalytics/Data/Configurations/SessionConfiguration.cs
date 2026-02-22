@@ -26,11 +26,11 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.Property(x => x.Country)
                .IsRequired()
-               .HasMaxLength(8); // ISO country code (e.g. LT, USA)
+               .HasMaxLength(30); // ISO country code (e.g. LT, USA)
 
         builder.Property(x => x.Language)
                .IsRequired()
-               .HasMaxLength(10); // e.g. en, en-US
+               .HasMaxLength(30); // e.g. en, en-US
 
         builder.Property(x => x.AppVersion)
             .IsRequired()

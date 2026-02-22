@@ -82,7 +82,6 @@ namespace SentinelAnalytics.Controllers
             };
 
             // 3. Country & 4. Language Stats
-            // Extracted from PropertiesJson of "SessionStart" or "AppLaunched" events
             var metadataEvents = await eventsQuery
                 .Where(e => e.EventName == "AppLaunched" || e.EventName == "SessionStart")
                 .Select(e => e.PropertiesJson)

@@ -11,7 +11,7 @@ namespace SentinelAnalytics.Controllers;
 [ApiController]
 public class IngestController(SentinelDbContext db) : ControllerBase
 {
-    [HttpGet("init")]
+    [HttpPost("init")]
     public async Task<IActionResult> Init([FromHeader(Name = "X-Sentinel-Key")] string apiKey, InitSessionDto dto)
     {
         var project = await db.Projects.FirstOrDefaultAsync(p => p.ApiKey == apiKey);

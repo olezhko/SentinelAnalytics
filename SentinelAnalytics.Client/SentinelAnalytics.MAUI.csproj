@@ -7,7 +7,7 @@
     <UseMaui>true</UseMaui>
 
     <PackageId>SentinelAnalytics.MAUI</PackageId>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Authors>Aleh Ladyka</Authors>
     <Company>LATec</Company>
     <Description>Sentinel Analytics SDK for .NET MAUI</Description>

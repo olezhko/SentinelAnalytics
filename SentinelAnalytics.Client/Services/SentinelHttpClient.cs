@@ -49,9 +49,11 @@ internal sealed class SentinelHttpClient
             var response = await _http.PostAsJsonAsync("init", dto);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync();
+
+            return await response.Content.ReadFromJsonAsync<string>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             return new Guid().ToString();
         }
