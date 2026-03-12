@@ -15,6 +15,8 @@ namespace SentinelAnalytics.Data.Entities
         public required string OsVersion { get; set; }
         public required string DeviceModel { get; set; }
 
+        public DateTimeOffset CreatedAt { get; set; }
+
         public Guid ProjectId { get; set; }
 
         [ForeignKey("ProjectId")]

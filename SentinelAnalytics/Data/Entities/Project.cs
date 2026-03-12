@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SentinelAnalytics.Data.Entities;
 
-public class Project
+public class Project : AuditableEntity
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();

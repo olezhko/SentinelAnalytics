@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data.Entities;
+using SentinelAnalytics.Data.Interceptor;
 
 namespace SentinelAnalytics.Data
 {
@@ -18,6 +19,9 @@ namespace SentinelAnalytics.Data
         public DbSet<MobileEvent> MobileEvents { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
 
+
+        public DbSet<UserSubscription> UserSubscriptions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Project>()
@@ -34,5 +38,8 @@ namespace SentinelAnalytics.Data
 
             base.OnModelCreating(modelBuilder);
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            => optionsBuilder.AddInterceptors(new AuditSaveChangesInterceptor());
     }
 }
