@@ -12,7 +12,7 @@
             <p class="text-slate-500 font-medium">Manage your personal credentials and console preferences.</p>
         </div>
         <div class="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-600/20">
-            @Model.Username.Substring(0, 1).ToUpper()
+            @Model.Input.Username.Substring(0, 1).ToUpper()
         </div>
     </div>
 
@@ -21,8 +21,8 @@
         <div class="lg:col-span-1">
             <nav class="flex flex-col gap-1">
                 <a asp-page="./Index" class="px-5 py-3 rounded-xl text-sm font-black bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 transition-all">General Info</a>
-                @* <a asp-page="./Email" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Email Config</a>
-                <a asp-page="./ChangePassword" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Authentication</a>
+                <a asp-page="./Subscription" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Subscription</a>
+                @*<a asp-page="./ChangePassword" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Authentication</a>
                 <a asp-page="./TwoFactorAuthentication" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Security (2FA)</a>
                 <a asp-page="./PersonalData" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-rose-600 transition-all border border-transparent hover:border-slate-200">Compliance & Data</a> *@
             </nav>
@@ -36,8 +36,9 @@
 
                     <div class="grid grid-cols-1 gap-6">
                         <div class="space-y-1">
-                            <label asp-for="Username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"></label>
-                            <input asp-for="Username" class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-sm text-slate-500" disabled />
+                            <label asp-for="Input.Username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"></label>
+                            <input asp-for="Input.Username" class="block w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-sm text-slate-500" />
+                            <span asp-validation-for="Input.Username" class="text-rose-500 text-[10px] font-bold"></span>
                         </div>
 
                         <div class="space-y-1">

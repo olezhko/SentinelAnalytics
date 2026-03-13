@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Models.Analytics;
-using System.Text.Json;
 
 namespace SentinelAnalytics.Controllers
 {
@@ -82,39 +81,29 @@ namespace SentinelAnalytics.Controllers
             };
 
             // 3. Country & 4. Language Stats
-            var metadataEvents = await eventsQuery
-                .Where(e => e.EventName == "AppLaunched" || e.EventName == "SessionStart")
-                .Select(e => e.PropertiesJson)
+            var countries = await db.Sessions
+                .AsNoTracking()
+                .Where(s => s.ProjectId == projectId && s.CreatedAt > from && s.CreatedAt < to)
+                .GroupBy(s => s.Country ?? "Unknown")
+                .Select(g => new { Key = g.Key, Value = g.Count() })
                 .ToListAsync();
 
-            var countries = new Dictionary<string, int>();
-            var languages = new Dictionary<string, int>();
+            var languages = await db.Sessions
+                .AsNoTracking()
+                .Where(s => s.ProjectId == projectId && s.CreatedAt > from && s.CreatedAt < to)
+                .GroupBy(s => s.Language ?? "Unknown")
+                .Select(g => new { Key = g.Key, Value = g.Count() })
+                .ToListAsync();
 
-            foreach (var json in metadataEvents)
-            {
-                if (string.IsNullOrEmpty(json)) continue;
-                try
-                {
-                    using var doc = JsonDocument.Parse(json);
-                    if (doc.RootElement.TryGetProperty("country", out var cProp))
-                    {
-                        var c = cProp.GetString();
-                        if (!string.IsNullOrEmpty(c)) countries[c] = countries.GetValueOrDefault(c) + 1;
-                    }
-                    if (doc.RootElement.TryGetProperty("language", out var lProp))
-                    {
-                        var l = lProp.GetString();
-                        if (!string.IsNullOrEmpty(l)) languages[l] = languages.GetValueOrDefault(l) + 1;
-                    }
-                }
-                catch { /* Suppress parsing errors for malformed JSON */ }
-            }
+            viewModel.RegionalStats = countries
+                .OrderByDescending(x => x.Value)
+                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value })
+                .ToList();
 
-            viewModel.RegionalStats = countries.OrderByDescending(x => x.Value).Take(5)
-                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value }).ToList();
-
-            viewModel.LanguageStats = languages.OrderByDescending(x => x.Value).Take(5)
-                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value }).ToList();
+            viewModel.LanguageStats = languages
+                .OrderByDescending(x => x.Value)
+                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value })
+                .ToList();
 
             return View(viewModel);
         }

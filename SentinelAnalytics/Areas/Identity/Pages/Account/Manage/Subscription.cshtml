@@ -1,0 +1,86 @@
+﻿@page
+@using SentinelAnalytics.Data.Entities
+@model SubscriptionModel
+@{
+    ViewData["Title"] = "Subscription";
+    ViewData["ActivePage"] = ManageNavPages.Subscription;
+}
+
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="mb-10 flex items-center justify-between">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Identity & Profile</h1>
+            <p class="text-slate-500 font-medium">Manage your personal credentials and console preferences.</p>
+        </div>
+        <div class="h-14 w-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-600/20">
+            @Model.Username.Substring(0, 1).ToUpper()
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+        <!-- Navigation -->
+        <div class="lg:col-span-1">
+            <nav class="flex flex-col gap-1">
+                <a asp-page="./Index" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">General Info</a>
+                <a asp-page="./Subscription" class="px-5 py-3 rounded-xl text-sm font-black bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 transition-all">Subscription</a>
+                @*<a asp-page="./ChangePassword" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Authentication</a>
+                <a asp-page="./TwoFactorAuthentication" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Security (2FA)</a>
+                <a asp-page="./PersonalData" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-rose-600 transition-all border border-transparent hover:border-slate-200">Compliance & Data</a> *@
+            </nav>
+        </div>
+
+        <!-- Form Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <form method="post" class="space-y-8">
+                <input asp-for="Input.UserSubscriptionId" type="hidden" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input asp-for="Input.NotifyOnCritical" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                            <div>
+                                <p class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">Critical Crashes</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Immediate alerts for fatal errors</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input asp-for="Input.NotifyOnError" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                            <div>
+                                <p class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">Standard Errors</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Alerts for non-fatal exceptions</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input asp-for="Input.NotifyOnRegression" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                            <div>
+                                <p class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">Regressions</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">When a resolved issue reappears</p>
+                            </div>
+                        </label>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Frequency</label>
+                            <select asp-for="Input.Frequency" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="RealTime" selected="@(Model.Input.Frequency == NotificationFrequency.RealTime ? "selected" : null)">Real-Time</option>
+                                <option value="Daily" selected="@(Model.Input.Frequency == NotificationFrequency.Daily ? "selected" : null)">Daily Digest</option>
+                                <option value="WeeklySummary" selected="@(Model.Input.Frequency == NotificationFrequency.WeeklySummary ? "selected" : null)">Weekly Summary</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-indigo-600 transition-all active:scale-[0.98]">
+                    Save Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
@@ -7,11 +8,11 @@ using SentinelAnalytics.Data.Entities;
 namespace SentinelAnalytics.Controllers;
 
 [Authorize]
-public class TeamController(SentinelDbContext db) : Controller
+public class TeamController(UserManager<IdentityUser> userManager, SentinelDbContext db) : Controller
 {
     public async Task<IActionResult> Index(Guid projectId)
     {
-        var userEmail = User.Identity?.Name;
+        var userId = userManager.GetUserId(User);
 
         var project = await db.Projects
             .Include(p => p.Members)
@@ -20,8 +21,9 @@ public class TeamController(SentinelDbContext db) : Controller
         if (project == null) return NotFound();
 
         // Check if user belongs to project
-        var membership = project.Members.FirstOrDefault(m => m.UserEmail == userEmail && m.IsAccepted);
-        if (membership == null) return Forbid();
+        var membership = project.Members.FirstOrDefault(m => m.UserId == userId && m.IsAccepted);
+        if (membership == null) 
+            return Forbid();
 
         ViewBag.IsManager = membership.Role == ProjectRoleType.Manager;
         return View(project);
@@ -30,10 +32,12 @@ public class TeamController(SentinelDbContext db) : Controller
     [HttpPost]
     public async Task<IActionResult> InviteDeveloper(Guid projectId, string email)
     {
-        var userEmail = User.Identity?.Name;
+        var userId = userManager.GetUserId(User);
 
         var isManager = await db.ProjectMembers
-            .AnyAsync(m => m.ProjectId == projectId && m.UserEmail == userEmail && m.Role == ProjectRoleType.Manager);
+            .AnyAsync(m => m.ProjectId == projectId 
+            && m.UserId == userId
+            && m.Role == ProjectRoleType.Manager);
 
         if (!isManager) 
             return Forbid();
@@ -61,12 +65,13 @@ public class TeamController(SentinelDbContext db) : Controller
     [HttpPost]
     public async Task<IActionResult> RevokeAccess(Guid memberId)
     {
+        var userId = userManager.GetUserId(User);
+
         var member = await db.ProjectMembers.FindAsync(memberId);
         if (member == null) return NotFound();
 
-        var userEmail = User.Identity?.Name ?? "admin@sentinel-analytics.io";
         var isManager = await db.ProjectMembers
-            .AnyAsync(m => m.ProjectId == member.ProjectId && m.UserEmail == userEmail && m.Role == ProjectRoleType.Manager);
+            .AnyAsync(m => m.ProjectId == member.ProjectId && m.UserId == userId && m.Role == ProjectRoleType.Manager);
 
         if (!isManager || member.Role == ProjectRoleType.Manager) return Forbid();
 

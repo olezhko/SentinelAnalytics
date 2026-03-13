@@ -9,7 +9,7 @@ public enum NotificationFrequency { RealTime, Daily, WeeklySummary }
 public class UserSubscription : AuditableEntity
 {
     [Key]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
     public required string UserId { get; set; }
 
     public bool NotifyOnCritical { get; set; } = true;

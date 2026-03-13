@@ -4,6 +4,8 @@
     ViewData["Title"] = "Crash Investigation";
     Layout = "_Layout";
     var breadcrumbs = (List<MobileEvent>)ViewBag.Breadcrumbs;
+    var startTime = breadcrumbs?.FirstOrDefault()?.Session.CreatedAt ?? Model.Session.CreatedAt;
+    Console.WriteLine(startTime);
 }
 
 <div class="bg-slate-50 min-h-screen">
@@ -142,6 +144,11 @@
                         <span class="text-2xl">🛰️</span> Session Trail
                     </h3>
 
+                    <h4 class="text-xl font-black text-slate-900 flex items-center gap-3">
+                        <span class="text-2xl">🚥</span> Session Start
+                        <span class="text-[10px] text-slate-400 font-mono">@startTime.DateTime.ToString("HH:mm:ss")</span>
+                    </h4>
+
                     <div class="relative space-y-10 flex-1">
                         <!-- Vertical Line -->
                         <div class="absolute left-[13px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
@@ -188,7 +195,6 @@
                     <div class="mt-12 pt-8 border-t border-slate-100 text-center">
                         <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-4">Total Session Duration</p>
                         @{
-                            var startTime = breadcrumbs?.FirstOrDefault()?.Timestamp ?? Model.Timestamp;
                             var duration = Model.Timestamp - startTime;
                         }
                         <p class="text-2xl font-black text-slate-900">@string.Format("{0:00}:{1:00}:{2:00}", duration.Hours, duration.Minutes, duration.Seconds)</p>

@@ -103,7 +103,7 @@ public class DashboardController(
                     ExceptionName = "TaskCanceledException",
                     Message = "A task was canceled while waiting for the ImageBuffer to flush.",
                     Timestamp = DateTime.UtcNow.AddHours(-8),
-                    Severity = Severity.Info,
+                    Severity = Severity.Warning,
                     StackTrace = "at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)\nat Sentinel.Mobile.Media.ImageLoader.LoadAsync(String url)"
                 }
             },
@@ -303,19 +303,6 @@ public class DashboardController(
         }
 
         return query;
-    }
-
-    public async Task<IActionResult> Settings(Guid projectId)
-    {
-        var role = await GetUserProjectRole(projectId);
-        if (role != ProjectRoleType.Manager) return Forbid();
-
-        var project = await db.Projects
-            .AsNoTracking()
-            .Include(p => p.Members)
-            .FirstOrDefaultAsync(p => p.Id == projectId);
-
-        return View(project);
     }
 
     private async Task<ProjectRoleType?> GetUserProjectRole(Guid projectId)

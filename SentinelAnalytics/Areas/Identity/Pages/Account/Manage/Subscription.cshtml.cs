@@ -5,14 +5,25 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using SentinelAnalytics.Data;
+using SentinelAnalytics.Data.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
 {
-    public class IndexModel(
+    public class SubscriptionModel(
+        SentinelDbContext dbContext,
         UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> signInManager) : PageModel
     {
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public string Username { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -33,33 +44,45 @@ namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Phone]
-            [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
+            public Guid UserSubscriptionId { get; set; }
+            public bool NotifyOnCritical { get; set; }
+            public bool NotifyOnError { get; set; }
+            public bool NotifyOnRegression { get; set; }
 
-            [Display(Name = "Username")]
-            public string Username { get; set; }
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            public NotificationFrequency Frequency { get; set; }
         }
 
         private async Task LoadAsync(IdentityUser user)
         {
             var userName = await userManager.GetUserNameAsync(user);
-            var phoneNumber = await userManager.GetPhoneNumberAsync(user);
+            Username = userName;
+
+            var data = await dbContext.UserSubscriptions
+                .FirstOrDefaultAsync(item => item.UserId == user.Id) 
+                    ?? new UserSubscription
+                        {
+                            UserId = user.Id,
+                            NotifyOnCritical = true,
+                            NotifyOnError = true,
+                            NotifyOnRegression = true,
+                            Frequency = NotificationFrequency.Daily
+                        };
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber,
-                Username = userName
+                NotifyOnCritical = data.NotifyOnCritical,
+                NotifyOnError = data.NotifyOnError,
+                NotifyOnRegression = data.NotifyOnRegression,
+                Frequency = data.Frequency,
+                UserSubscriptionId = data.Id
             };
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await userManager.GetUserAsync(User);
+
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
@@ -83,19 +106,28 @@ namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var phoneNumber = await userManager.GetPhoneNumberAsync(user);
-            if (Input.PhoneNumber != phoneNumber)
+            if (Input.UserSubscriptionId == Guid.Empty)
             {
-                var setPhoneResult = await userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
+                dbContext.UserSubscriptions.Add(new UserSubscription()
                 {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
-                    return RedirectToPage();
-                }
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    NotifyOnCritical = Input.NotifyOnCritical,
+                    NotifyOnError = Input.NotifyOnError,
+                    NotifyOnRegression = Input.NotifyOnRegression,
+                    Frequency = Input.Frequency,
+                });
+            }
+            else
+            {
+                var subs = await dbContext.UserSubscriptions.FindAsync(Input.UserSubscriptionId);
+                subs.Frequency = Input.Frequency;
+                subs.NotifyOnRegression = Input.NotifyOnRegression;
+                subs.NotifyOnCritical = Input.NotifyOnCritical;
+                subs.NotifyOnError = Input.NotifyOnError;
             }
 
-            await userManager.SetUserNameAsync(user, Input.Username);
-
+            await dbContext.SaveChangesAsync();
             await signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
