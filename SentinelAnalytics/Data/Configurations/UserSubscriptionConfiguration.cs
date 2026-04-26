@@ -19,11 +19,6 @@ public class UserSubscriptionConfiguration : IEntityTypeConfiguration<UserSubscr
                .IsRequired()
                .HasMaxLength(450); // default IdentityUser PK length
 
-        // Enum mapping (store as int)
-        builder.Property(x => x.Frequency)
-               .HasConversion<string>()
-               .IsRequired();
-
         // Flags (optional but explicit)
         builder.Property(x => x.NotifyOnCritical)
                .IsRequired();
@@ -33,10 +28,6 @@ public class UserSubscriptionConfiguration : IEntityTypeConfiguration<UserSubscr
 
         builder.Property(x => x.NotifyOnRegression)
                .IsRequired();
-
-        // Digest tracking
-        builder.Property(x => x.LastDigestSentAt)
-               .IsRequired(false);
 
         // Relationship (1:1)
         builder.HasOne(x => x.User)

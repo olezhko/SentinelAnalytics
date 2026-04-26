@@ -1,9 +1,9 @@
 ﻿@page
 @using SentinelAnalytics.Data.Entities
-@model SubscriptionModel
+@model BillingModel
 @{
-    ViewData["Title"] = "Subscription";
-    ViewData["ActivePage"] = ManageNavPages.Subscription;
+    ViewData["Title"] = "Billing";
+    ViewData["ActivePage"] = ManageNavPages.Billing;
 }
 
 <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -22,8 +22,8 @@
         <div class="lg:col-span-1">
             <nav class="flex flex-col gap-1">
                 <a asp-page="./Index" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">General Info</a>
-                <a asp-page="./Subscription" class="px-5 py-3 rounded-xl text-sm font-black bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 transition-all">Subscription</a>
-                <a asp-page="./Billing" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Billing</a>
+                <a asp-page="./Subscription" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Subscription</a>
+                <a asp-page="./Billing" class="px-5 py-3 rounded-xl text-sm font-black bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 transition-all">Billing</a>
                 @*<a asp-page="./TwoFactorAuthentication" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200">Security (2FA)</a>
                 <a asp-page="./PersonalData" class="px-5 py-3 rounded-xl text-sm font-black text-slate-500 hover:bg-white hover:text-rose-600 transition-all border border-transparent hover:border-slate-200">Compliance & Data</a> *@
             </nav>
@@ -50,14 +50,6 @@
                             <p class="text-[10px] text-slate-400 font-bold uppercase">Alerts for non-fatal exceptions</p>
                         </div>
                     </label>
-
-@*                     <label class="flex items-center gap-3 cursor-pointer group">
-                        <input asp-for="Input.NotifyOnRegression" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-                        <div>
-                            <p class="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">Regressions</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">When a resolved issue reappears</p>
-                        </div>
-                    </label> *@
                 </div>
 
                 <button type="submit" class="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-indigo-600 transition-all active:scale-[0.98]">

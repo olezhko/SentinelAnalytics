@@ -19,8 +19,11 @@ namespace SentinelAnalytics.Data
         public DbSet<MobileEvent> MobileEvents { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
 
-
+        public DbSet<UserDetail> UserDetails { get; set; }
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
+
+
+        public DbSet<PricingPlan> PricingPlans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +38,43 @@ namespace SentinelAnalytics.Data
                 .HasIndex(c => c.SessionId);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SentinelDbContext).Assembly);
+
+
+            modelBuilder.Entity<PricingPlan>().HasData(
+               new PricingPlan
+               {
+                   Id = Guid.Parse("f0000000-0000-0000-0000-000000000001"),
+                   Name = "Free",
+                   Price = 0,
+                   MaxProjects = 1,
+                   MaxEventsPerMonth = 1000,
+                   MaxCrashesPerMonth = 100,
+                   MaxTeamMembersPerProject = 2,
+                   Description = "Perfect for side projects and hobbyists."
+               },
+               new PricingPlan
+               {
+                   Id = Guid.Parse("f0000000-0000-0000-0000-000000000002"),
+                   Name = "Pro",
+                   Price = 49,
+                   MaxProjects = 10,
+                   MaxEventsPerMonth = 100000,
+                   MaxCrashesPerMonth = 5000,
+                   MaxTeamMembersPerProject = 10,
+                   Description = "For growing teams and production apps."
+               },
+               new PricingPlan
+               {
+                   Id = Guid.Parse("f0000000-0000-0000-0000-000000000003"),
+                   Name = "Max",
+                   Price = 199,
+                   MaxProjects = 100,
+                   MaxEventsPerMonth = 1000000,
+                   MaxCrashesPerMonth = 50000,
+                   MaxTeamMembersPerProject = 50,
+                   Description = "Enterprise-grade scale and support."
+               }
+           );
 
             base.OnModelCreating(modelBuilder);
         }

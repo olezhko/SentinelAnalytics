@@ -1,0 +1,134 @@
+﻿@model BillingViewModel
+@{
+    ViewData["Title"] = "Billing & Subscription";
+    Layout = "_Layout";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-12">
+        <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2">Billing & Plans</h1>
+        <p class="text-slate-500 font-medium">Manage your account plan and monitor your infrastructure usage.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+        <!-- Current Plan Card -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white rounded-[3rem] border border-slate-200 p-10 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-10">
+                    <span class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black uppercase tracking-widest border border-indigo-100">
+                        @Model.CurrentPlan.Name Plan
+                    </span>
+                </div>
+                
+                <div class="mb-12">
+                    <h2 class="text-2xl font-black text-slate-900 mb-2">Usage Overview</h2>
+                    <p class="text-slate-500 font-medium">Metrics across all managed projects for the current month.</p>
+                </div>
+
+                <div class="space-y-10">
+                    <!-- Projects Usage -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-sm font-black text-slate-900">Projects</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentProjectCount of @Model.CurrentPlan.MaxProjects used</p>
+                            </div>
+                            <span class="text-sm font-black text-slate-900">@Model.ProjectUsagePercent.ToString("F0")%</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-600 transition-all duration-1000" style="width: @Model.ProjectUsagePercent%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Events Usage -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-sm font-black text-slate-900">Events Ingested</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentEventCountMonth.ToString("N0") of @Model.CurrentPlan.MaxEventsPerMonth.ToString("N0") used</p>
+                            </div>
+                            <span class="text-sm font-black text-slate-900">@Model.EventUsagePercent.ToString("F1")%</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500 transition-all duration-1000" style="width: @Model.EventUsagePercent%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Crashes Usage -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-sm font-black text-slate-900">Crash Reports</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentCrashCountMonth.ToString("N0") of @Model.CurrentPlan.MaxCrashesPerMonth.ToString("N0") used</p>
+                            </div>
+                            <span class="text-sm font-black text-slate-900">@Model.CrashUsagePercent.ToString("F1")%</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-rose-500 transition-all duration-1000" style="width: @Model.CrashUsagePercent%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan Selection -->
+            <div class="space-y-6">
+                <h2 class="text-2xl font-black text-slate-900 ml-4">Available Plans</h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    @foreach (var plan in Model.AvailablePlans)
+                    {
+                        <div class="bg-white rounded-[2.5rem] border @(plan.Id == Model.CurrentPlan.Id ? "border-indigo-600 ring-4 ring-indigo-50" : "border-slate-200") p-8 shadow-sm flex flex-col">
+                            <h3 class="text-lg font-black text-slate-900 mb-1">@plan.Name</h3>
+                            <p class="text-2xl font-black text-slate-900 mb-6">$@plan.Price.ToString("F0")<span class="text-xs text-slate-400 font-bold uppercase tracking-widest">/mo</span></p>
+                            
+                            <div class="space-y-3 mb-8 flex-1">
+                                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Includes:</p>
+                                <p class="text-xs font-bold text-slate-700">@plan.MaxProjects Projects</p>
+                                <p class="text-xs font-bold text-slate-700">@plan.MaxEventsPerMonth.ToString("N0") Events</p>
+                                <p class="text-xs font-bold text-slate-700">@plan.MaxCrashesPerMonth.ToString("N0") Crashes</p>
+                            </div>
+
+                            @if (plan.Id == Model.CurrentPlan.Id)
+                            {
+                                <button disabled class="w-full py-3 bg-slate-100 text-slate-400 font-black rounded-xl text-xs uppercase tracking-widest cursor-not-allowed">Current Plan</button>
+                            }
+                            else
+                            {
+                                <form asp-action="ChangePlan" method="post">
+                                    <input type="hidden" name="planId" value="@plan.Id" />
+                                    <button type="submit" class="w-full py-3 bg-slate-900 text-white font-black rounded-xl text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
+                                        @(plan.Price > Model.CurrentPlan.Price ? "Upgrade" : "Switch")
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="space-y-8">
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-600/30 rounded-full blur-3xl"></div>
+                <h3 class="text-xl font-black mb-4 relative z-10">Billing Cycle</h3>
+                <p class="text-slate-400 text-sm font-medium mb-6 relative z-10">Your current billing period ends on <span class="text-white font-bold">@DateTime.UtcNow.AddDays(30).ToString("MMM dd, yyyy")</span>.</p>
+                <div class="p-4 bg-white/10 rounded-2xl border border-white/10 relative z-10">
+                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Next Payment</p>
+                    <p class="text-2xl font-black">$@Model.CurrentPlan.Price.ToString("F0")</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
+                <h3 class="text-lg font-black text-slate-900 mb-4">Payment Method</h3>
+                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="w-12 h-8 bg-slate-200 rounded flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">Card</div>
+                    <div>
+                        <p class="text-sm font-black text-slate-900">•••• 4242</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Expires 12/28</p>
+                    </div>
+                </div>
+                <button class="w-full mt-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-all">Update Payment Method</button>
+            </div>
+        </div>
+    </div>
+</div>

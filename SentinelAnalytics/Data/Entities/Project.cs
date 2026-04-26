@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SentinelAnalytics.Data.Entities;
 
+public enum PlanType { Free, Pro }
+
 public class Project : AuditableEntity
 {
     [Key]
@@ -12,7 +14,7 @@ public class Project : AuditableEntity
     public string ApiKey { get; set; } = Guid.NewGuid().ToString("N");
     public required string Platform { get; set; } // iOS, Android, Cross-Platform
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-
+    public PlanType Plan { get; set; } = PlanType.Free;
     public virtual ICollection<CrashReport> Crashes { get; set; } = [];
     public virtual ICollection<MobileEvent> Events { get; set; } = [];
     public virtual ICollection<ProjectMember> Members { get; set; } = [];

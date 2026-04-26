@@ -77,11 +77,26 @@ namespace SentinelAnalytics.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProject(string name, string platform)
         {
-            if (string.IsNullOrEmpty(name))
-                return BadRequest("Project name is required.");
-
             var user = await userManager.GetUserAsync(User)
                 ?? throw new InvalidDataException("User not login");
+
+            var sub = await _db.UserDetails.Include(s => s.Plan).FirstOrDefaultAsync(s => s.UserId == user.Id);
+            if (sub == null)
+            {
+                var freePlan = await _db.PricingPlans.FirstOrDefaultAsync(p => p.Price == 0);
+                sub = new UserDetail { UserId = user.Id, PlanId = freePlan!.Id, Plan = freePlan };
+                _db.UserDetails.Add(sub);
+                await _db.SaveChangesAsync();
+            }
+
+            var currentProjectCount = await _db.ProjectMembers.CountAsync(pm => pm.UserEmail == user.Email && pm.Role == ProjectRoleType.Manager);
+            if (currentProjectCount >= sub.Plan.MaxProjects)
+            {
+                return BadRequest($"Project limit reached for your {sub.Plan.Name} plan. Please upgrade to create more projects.");
+            }
+
+            if (string.IsNullOrEmpty(name))
+                return BadRequest("Project name is required.");
 
             var newProject = new Project { UserId = user.Id, Name = name, Platform = platform, CreatedDate = DateTime.UtcNow };
             _db.Projects.Add(newProject);

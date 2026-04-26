@@ -142,7 +142,10 @@ public class DashboardController(
         var impactedUsers = await query.Select(c => c.UserId ?? c.Session.DeviceId).Distinct().CountAsync();
         var estimatedActiveUsers = totalSessions;
         var crashFreeRate = 100.0 - ((double)impactedUsers / estimatedActiveUsers * 100.0);
-        var recentCrashesRaw = await query.OrderByDescending(c => c.Timestamp).Take(50).ToListAsync();
+        var recentCrashesRaw = await query
+            .OrderByDescending(c => c.Timestamp)
+            .Take(50)
+            .ToListAsync();
 
         // Group by Exception to find regressions/counts
         var groupedCrashes = recentCrashesRaw

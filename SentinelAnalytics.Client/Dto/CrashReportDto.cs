@@ -1,9 +1,12 @@
-﻿namespace SentinelAnalytics.MAUI.Dto;
+﻿using System.Text.Json.Serialization;
+
+namespace SentinelAnalytics.MAUI.Dto;
 
 internal sealed class CrashReportDto
 {
     public required string SessionId { get; init; }
-    public string Severity { get; init; } = "Error";
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public Severity Severity { get; set; }
     public required string ExceptionName { get; init; }
     public required string Message { get; init; }
     public required string StackTrace { get; init; }

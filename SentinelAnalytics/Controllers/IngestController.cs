@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
 using SentinelAnalytics.Models.Dtos;
+using SentinelAnalytics.Services;
 using System.Text.Json;
 
 namespace SentinelAnalytics.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class IngestController(SentinelDbContext db) : ControllerBase
+public class IngestController(SentinelDbContext db, ICrashNotificationService crashNotificationService) : ControllerBase
 {
     [HttpPost("init")]
     public async Task<IActionResult> Init([FromHeader(Name = "X-Sentinel-Key")] string apiKey, InitSessionDto dto)
@@ -25,7 +26,8 @@ public class IngestController(SentinelDbContext db) : ControllerBase
             Country = dto.Country,
             Language = dto.Language,
             DeviceId = dto.DeviceId,
-            ProjectId = project.Id
+            ProjectId = project.Id,
+            CreatedAt = DateTime.UtcNow,
         };
 
         db.Sessions.Add(session);
@@ -39,6 +41,12 @@ public class IngestController(SentinelDbContext db) : ControllerBase
     {
         var project = await db.Projects.FirstOrDefaultAsync(p => p.ApiKey == apiKey);
         if (project == null) return Unauthorized();
+
+        // Check Plan Limits
+        if (await IsLimitReached(project, true))
+        {
+            return StatusCode(429, "Monthly crash limit reached for this account. Please upgrade your plan.");
+        }
 
         var newReport = new CrashReport()
         {
@@ -56,6 +64,8 @@ public class IngestController(SentinelDbContext db) : ControllerBase
         db.CrashReports.Add(newReport);
         await db.SaveChangesAsync();
 
+        await crashNotificationService.NotifyProjectTeamAsync(project.Id, newReport, default);
+
         return Ok();
     }
 
@@ -64,6 +74,12 @@ public class IngestController(SentinelDbContext db) : ControllerBase
     {
         var project = await db.Projects.FirstOrDefaultAsync(p => p.ApiKey == apiKey);
         if (project == null) return Unauthorized();
+
+        // Check Plan Limits
+        if (await IsLimitReached(project, false))
+        {
+            return StatusCode(429, "Monthly event limit reached for this account. Please upgrade your plan.");
+        }
 
         var mobileEvent = new MobileEvent()
         {
@@ -78,5 +94,37 @@ public class IngestController(SentinelDbContext db) : ControllerBase
         await db.SaveChangesAsync();
 
         return Ok();
+    }
+
+    private async Task<bool> IsLimitReached(Project project, bool isCrash)
+    {
+        var manager = await db.ProjectMembers
+            .Where(pm => pm.ProjectId == project.Id && pm.Role == ProjectRoleType.Manager)
+            .FirstOrDefaultAsync();
+
+        if (manager == null) return false;
+
+        var sub = await db.UserDetails
+            .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.UserId == manager.UserId);
+
+        if (sub == null || sub.Plan == null) return false;
+
+        var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+        var managedProjectIds = await db.ProjectMembers
+            .Where(pm => pm.UserEmail == manager.UserEmail && pm.Role == ProjectRoleType.Manager)
+            .Select(pm => pm.ProjectId)
+            .ToListAsync();
+
+        if (isCrash)
+        {
+            var count = await db.CrashReports.CountAsync(c => managedProjectIds.Contains(c.ProjectId) && c.Timestamp >= startOfMonth);
+            return count >= sub.Plan.MaxCrashesPerMonth;
+        }
+        else
+        {
+            var count = await db.MobileEvents.CountAsync(e => managedProjectIds.Contains(e.ProjectId) && e.Timestamp >= startOfMonth);
+            return count >= sub.Plan.MaxEventsPerMonth;
+        }
     }
 }

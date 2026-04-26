@@ -21,6 +21,18 @@ public class DashboardStatsViewModel
     public string? SearchQuery { get; set; }
 }
 
+public record CrashReportGroup
+{
+    public required string ExceptionName { get; set; }
+    public required string Message { get; set; }
+
+    public required Guid[] Ids { get; set; } 
+    public DateTimeOffset LastTriggered { get; set; }
+
+    public bool IsResolved { get; set; } = false;
+    public Severity Severity { get; set; }
+}
+
 public class DailyStat
 {
     public required string Date { get; set; }

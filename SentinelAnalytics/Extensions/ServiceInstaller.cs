@@ -9,6 +9,7 @@ namespace SentinelAnalytics.Extensions
         {
             services.AddScoped<IGeminiService, GeminiService>();
             services.AddScoped<IEmailSender, SentinelEmailSender>();
+            services.AddScoped<ICrashNotificationService, CrashNotificationService>();
 
             services.AddHttpClient();
 

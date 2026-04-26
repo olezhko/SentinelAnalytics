@@ -24,6 +24,6 @@ public class AnalyticsViewModel
 
 public class ChartDataPoint
 {
-    public string Label { get; set; }
+    public required string Label { get; set; }
     public double Value { get; set; }
 }

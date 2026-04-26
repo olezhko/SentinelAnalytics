@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
 {
-    public class SubscriptionModel(
+    public class BillingModel(
         SentinelDbContext dbContext,
         UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> signInManager) : PageModel

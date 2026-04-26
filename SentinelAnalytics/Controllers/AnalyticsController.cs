@@ -95,17 +95,46 @@ namespace SentinelAnalytics.Controllers
                 .Select(g => new { Key = g.Key, Value = g.Count() })
                 .ToListAsync();
 
-            viewModel.RegionalStats = countries
-                .OrderByDescending(x => x.Value)
-                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value })
-                .ToList();
+            viewModel.LanguageStats = ToTopWithOther(
+                languages.Select(x => (x.Key, x.Value))
+            );
 
-            viewModel.LanguageStats = languages
-                .OrderByDescending(x => x.Value)
-                .Select(x => new ChartDataPoint { Label = x.Key, Value = x.Value })
-                .ToList();
+            viewModel.RegionalStats = ToTopWithOther(
+                countries.Select(x => (x.Key, x.Value))
+            );
 
             return View(viewModel);
+        }
+
+        private static List<ChartDataPoint> ToTopWithOther(
+            IEnumerable<(string Key, int Value)> data,
+            int top = 5)
+        {
+            var ordered = data
+                .OrderByDescending(x => x.Value)
+                .ToList();
+
+            var topItems = ordered.Take(top).ToList();
+            var otherSum = ordered.Skip(top).Sum(x => x.Value);
+
+            var result = topItems
+                .Select(x => new ChartDataPoint
+                {
+                    Label = x.Key,
+                    Value = x.Value
+                })
+                .ToList();
+
+            if (otherSum > 0)
+            {
+                result.Add(new ChartDataPoint
+                {
+                    Label = "Other",
+                    Value = otherSum
+                });
+            }
+
+            return result;
         }
     }
 }

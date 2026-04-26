@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SentinelAnalytics.Data.Entities;
@@ -16,4 +17,7 @@ public class ProjectMember
 
     [ForeignKey("ProjectId")]
     public virtual Project Project { get; set; } = null!;
+
+    [ForeignKey("UserId")]
+    public virtual IdentityUser? User { get; set; } = null!;
 }

@@ -130,11 +130,17 @@
     <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm mb-10">
         <h3 class="text-lg font-bold text-slate-900 mb-6">Incident Trends (Last 7 Days)</h3>
         <div class="flex items-end gap-2 h-48">
+            @{
+                var max = Model.DailyTrends.Max(item => item.Count);
+                var containerHeight = 192.0;
+                var pixelPerItem = max == 0 ? 0 : containerHeight / max;
+                pixelPerItem = Math.Min(pixelPerItem, 10);
+            }
             @foreach (var stat in Model.DailyTrends)
             {
                 <div class="flex-1 group relative">
                     <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">@stat.Count</div>
-                    <div class="bg-indigo-600/20 group-hover:bg-indigo-600 rounded-t-lg transition-all" style="height: @(stat.Count * 10)px"></div>
+                    <div class="bg-indigo-600/20 group-hover:bg-indigo-600 rounded-t-lg transition-all" style="height: @(stat.Count * pixelPerItem)px"></div>
                     <p class="text-[10px] text-slate-400 font-bold uppercase text-center mt-2">@stat.Date</p>
                 </div>
             }
