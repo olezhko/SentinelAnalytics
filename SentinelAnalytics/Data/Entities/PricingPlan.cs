@@ -15,4 +15,5 @@ public class PricingPlan
     public int MaxEventsPerMonth { get; set; }
     public int MaxCrashesPerMonth { get; set; }
     public int MaxTeamMembersPerProject { get; set; }
+    public string? StripePriceId { get; set; }
 }

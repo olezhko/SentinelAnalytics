@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SentinelAnalytics.Data;
 
@@ -11,9 +12,11 @@ using SentinelAnalytics.Data;
 namespace SentinelAnalytics.Data.Migrations
 {
     [DbContext(typeof(SentinelDbContext))]
-    partial class SentinelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260222204859_AddAuditableEntitySessionProject")]
+    partial class AddAuditableEntitySessionProject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,78 +332,6 @@ namespace SentinelAnalytics.Data.Migrations
                     b.ToTable("MobileEvents");
                 });
 
-            modelBuilder.Entity("SentinelAnalytics.Data.Entities.PricingPlan", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MaxCrashesPerMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxEventsPerMonth")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxProjects")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxTeamMembersPerProject")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("StripePriceId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PricingPlans");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("f0000000-0000-0000-0000-000000000001"),
-                            Description = "Perfect for side projects and hobbyists.",
-                            MaxCrashesPerMonth = 100,
-                            MaxEventsPerMonth = 1000,
-                            MaxProjects = 1,
-                            MaxTeamMembersPerProject = 2,
-                            Name = "Free",
-                            Price = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000000-0000-0000-0000-000000000002"),
-                            Description = "For growing teams and production apps.",
-                            MaxCrashesPerMonth = 5000,
-                            MaxEventsPerMonth = 100000,
-                            MaxProjects = 10,
-                            MaxTeamMembersPerProject = 10,
-                            Name = "Pro",
-                            Price = 49m
-                        },
-                        new
-                        {
-                            Id = new Guid("f0000000-0000-0000-0000-000000000003"),
-                            Description = "Enterprise-grade scale and support.",
-                            MaxCrashesPerMonth = 50000,
-                            MaxEventsPerMonth = 1000000,
-                            MaxProjects = 100,
-                            MaxTeamMembersPerProject = 50,
-                            Name = "Max",
-                            Price = 199m
-                        });
-                });
-
             modelBuilder.Entity("SentinelAnalytics.Data.Entities.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -421,9 +352,6 @@ namespace SentinelAnalytics.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Plan")
-                        .HasColumnType("int");
 
                     b.Property<string>("Platform")
                         .IsRequired()
@@ -472,11 +400,9 @@ namespace SentinelAnalytics.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("ProjectId", "UserEmail")
                         .IsUnique();
@@ -500,6 +426,9 @@ namespace SentinelAnalytics.Data.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DeviceId")
@@ -536,99 +465,6 @@ namespace SentinelAnalytics.Data.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Sessions", (string)null);
-                });
-
-            modelBuilder.Entity("SentinelAnalytics.Data.Entities.UserDetail", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BillingAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillingCity")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillingCountry")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillingState")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BillingZip")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardBrand")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardExpiry")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardLastFour")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardholderName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("PlanId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("StripeCustomerId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StripeSubscriptionId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StripeSubscriptionStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("PlanId");
-
-                    b.ToTable("UserDetails");
-                });
-
-            modelBuilder.Entity("SentinelAnalytics.Data.Entities.UserSubscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("NotifyOnCritical")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("NotifyOnError")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("NotifyOnRegression")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("UserSubscriptions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -739,13 +575,7 @@ namespace SentinelAnalytics.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
                     b.Navigation("Project");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SentinelAnalytics.Data.Entities.Session", b =>
@@ -757,36 +587,6 @@ namespace SentinelAnalytics.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("SentinelAnalytics.Data.Entities.UserDetail", b =>
-                {
-                    b.HasOne("SentinelAnalytics.Data.Entities.PricingPlan", "Plan")
-                        .WithMany()
-                        .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Plan");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SentinelAnalytics.Data.Entities.UserSubscription", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithOne()
-                        .HasForeignKey("SentinelAnalytics.Data.Entities.UserSubscription", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SentinelAnalytics.Data.Entities.Project", b =>

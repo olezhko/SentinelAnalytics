@@ -111,23 +111,46 @@
             <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-600/30 rounded-full blur-3xl"></div>
                 <h3 class="text-xl font-black mb-4 relative z-10">Billing Cycle</h3>
-                <p class="text-slate-400 text-sm font-medium mb-6 relative z-10">Your current billing period ends on <span class="text-white font-bold">@DateTime.UtcNow.AddDays(30).ToString("MMM dd, yyyy")</span>.</p>
-                <div class="p-4 bg-white/10 rounded-2xl border border-white/10 relative z-10">
-                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Next Payment</p>
-                    <p class="text-2xl font-black">$@Model.CurrentPlan.Price.ToString("F0")</p>
-                </div>
+                @if (Model.CurrentPlan.Price > 0)
+                {
+                    <p class="text-slate-400 text-sm font-medium mb-6 relative z-10">Your current billing period ends on <span class="text-white font-bold">@Model.NextBillingDate.ToString("MMM dd, yyyy")</span>.</p>
+                    <div class="p-4 bg-white/10 rounded-2xl border border-white/10 relative z-10">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Next Payment</p>
+                        <p class="text-2xl font-black">$@Model.CurrentPlan.Price.ToString("F0")</p>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-slate-400 text-sm font-medium mb-6 relative z-10">You are on the <span class="text-white font-bold">Free</span> plan with no billing cycle.</p>
+                    <div class="p-4 bg-white/10 rounded-2xl border border-white/10 relative z-10">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Next Payment</p>
+                        <p class="text-2xl font-black">$0</p>
+                    </div>
+                }
             </div>
 
             <div class="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
                 <h3 class="text-lg font-black text-slate-900 mb-4">Payment Method</h3>
-                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="w-12 h-8 bg-slate-200 rounded flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">Card</div>
-                    <div>
-                        <p class="text-sm font-black text-slate-900">•••• 4242</p>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Expires 12/28</p>
+                @if (Model.HasPaymentMethod)
+                {
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div class="w-12 h-8 bg-slate-200 rounded flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">@Model.CardBrand</div>
+                        <div>
+                            <p class="text-sm font-black text-slate-900">•••• @Model.CardLastFour</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">Expires @Model.CardExpiry</p>
+                        </div>
                     </div>
-                </div>
-                <button class="w-full mt-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-all">Update Payment Method</button>
+                }
+                else
+                {
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div class="w-12 h-8 bg-slate-100 rounded flex items-center justify-center text-[10px] font-black text-slate-400 uppercase">None</div>
+                        <p class="text-sm font-medium text-slate-400">No payment method on file.</p>
+                    </div>
+                }
+                <a asp-area="Identity" asp-page="/Account/Manage/Billing" class="block w-full mt-6 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl text-xs text-center hover:bg-slate-50 transition-all">
+                    @(Model.HasPaymentMethod ? "Update Payment Method" : "Add Payment Method")
+                </a>
             </div>
         </div>
     </div>

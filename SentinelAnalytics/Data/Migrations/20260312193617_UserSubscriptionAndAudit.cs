@@ -11,27 +11,6 @@ namespace SentinelAnalytics.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "CreatedAt",
-                table: "Sessions",
-                type: "datetimeoffset",
-                nullable: false,
-                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
-
-            migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "CreatedAt",
-                table: "Projects",
-                type: "datetimeoffset",
-                nullable: false,
-                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
-
-            migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "UpdatedAt",
-                table: "Projects",
-                type: "datetimeoffset",
-                nullable: false,
-                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
-
             migrationBuilder.CreateTable(
                 name: "UserSubscriptions",
                 columns: table => new
@@ -69,18 +48,6 @@ namespace SentinelAnalytics.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "UserSubscriptions");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Sessions");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Projects");
-
-            migrationBuilder.DropColumn(
-                name: "UpdatedAt",
-                table: "Projects");
         }
     }
 }

@@ -1,5 +1,3 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
 using Microsoft.AspNetCore.Identity;
@@ -8,80 +6,88 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SentinelAnalytics.Data;
 using SentinelAnalytics.Data.Entities;
+using SentinelAnalytics.Services;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
 {
     public class BillingModel(
         SentinelDbContext dbContext,
         UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager) : PageModel
+        IStripeService stripeService,
+        IConfiguration configuration) : PageModel
     {
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string Username { get; set; }
+        public string StripePublishableKey { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+        public bool HasActivePlan { get; set; }
+        public UserDetail CurrentUserDetail { get; set; }
+        public List<PricingPlan> AvailablePlans { get; set; }
+
         public class InputModel
         {
-            public Guid UserSubscriptionId { get; set; }
-            public bool NotifyOnCritical { get; set; }
-            public bool NotifyOnError { get; set; }
-            public bool NotifyOnRegression { get; set; }
+            public Guid SelectedPlanId { get; set; }
+
+            // Set by Stripe.js — raw card never reaches the server
+            public string PaymentMethodId { get; set; }
+
+            [Display(Name = "Billing Address")]
+            public string BillingAddress { get; set; }
+
+            [Display(Name = "City")]
+            public string BillingCity { get; set; }
+
+            [Display(Name = "State / Region")]
+            public string BillingState { get; set; }
+
+            [Display(Name = "ZIP / Postal Code")]
+            public string BillingZip { get; set; }
+
+            [Display(Name = "Country")]
+            public string BillingCountry { get; set; }
         }
 
         private async Task LoadAsync(IdentityUser user)
         {
-            var userName = await userManager.GetUserNameAsync(user);
-            Username = userName;
+            Username = await userManager.GetUserNameAsync(user);
+            StripePublishableKey = configuration["Stripe:PublishableKey"];
+            AvailablePlans = await dbContext.PricingPlans.OrderBy(p => p.Price).ToListAsync();
 
-            var data = await dbContext.UserSubscriptions
-                .FirstOrDefaultAsync(item => item.UserId == user.Id) 
-                    ?? new UserSubscription
-                        {
-                            UserId = user.Id,
-                            NotifyOnCritical = true,
-                            NotifyOnError = true,
-                            NotifyOnRegression = true,
-                        };
+            CurrentUserDetail = await dbContext.UserDetails
+                .Include(d => d.Plan)
+                .FirstOrDefaultAsync(d => d.UserId == user.Id);
 
-            Input = new InputModel
+            HasActivePlan = CurrentUserDetail != null;
+
+            if (HasActivePlan)
             {
-                NotifyOnCritical = data.NotifyOnCritical,
-                NotifyOnError = data.NotifyOnError,
-                NotifyOnRegression = data.NotifyOnRegression,
-                UserSubscriptionId = data.Id
-            };
+                Input = new InputModel
+                {
+                    SelectedPlanId = CurrentUserDetail.PlanId,
+                    BillingAddress = CurrentUserDetail.BillingAddress,
+                    BillingCity = CurrentUserDetail.BillingCity,
+                    BillingState = CurrentUserDetail.BillingState,
+                    BillingZip = CurrentUserDetail.BillingZip,
+                    BillingCountry = CurrentUserDetail.BillingCountry,
+                };
+            }
+            else
+            {
+                Input = new InputModel();
+            }
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await userManager.GetUserAsync(User);
-
             if (user == null)
-            {
                 return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
-            }
 
             await LoadAsync(user);
             return Page();
@@ -91,8 +97,34 @@ namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
         {
             var user = await userManager.GetUserAsync(User);
             if (user == null)
-            {
                 return NotFound($"Unable to load user with ID '{userManager.GetUserId(User)}'.");
+
+            if (Input.SelectedPlanId == Guid.Empty)
+            {
+                ModelState.AddModelError(string.Empty, "Please select a plan.");
+                await LoadAsync(user);
+                return Page();
+            }
+
+            var plan = await dbContext.PricingPlans.FindAsync(Input.SelectedPlanId);
+            if (plan == null)
+            {
+                ModelState.AddModelError(string.Empty, "Selected plan not found.");
+                await LoadAsync(user);
+                return Page();
+            }
+
+            var isPaidPlan = plan.Price > 0;
+
+            // For paid plans, require either a new payment method or an existing one on file
+            var existing = await dbContext.UserDetails.FirstOrDefaultAsync(d => d.UserId == user.Id);
+            var hasExistingCard = existing?.CardLastFour != null;
+
+            if (isPaidPlan && string.IsNullOrWhiteSpace(Input.PaymentMethodId) && !hasExistingCard)
+            {
+                ModelState.AddModelError(string.Empty, "A payment method is required for paid plans.");
+                await LoadAsync(user);
+                return Page();
             }
 
             if (!ModelState.IsValid)
@@ -101,29 +133,127 @@ namespace SentinelAnalytics.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            if (Input.UserSubscriptionId == Guid.Empty)
+            try
             {
-                dbContext.UserSubscriptions.Add(new UserSubscription()
+                await ProcessSubscriptionAsync(user, plan, existing);
+            }
+            catch (Stripe.StripeException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.StripeError?.Message ?? ex.Message);
+                await LoadAsync(user);
+                return Page();
+            }
+
+            StatusMessage = "Billing information saved.";
+            return RedirectToPage();
+        }
+
+        private async Task ProcessSubscriptionAsync(IdentityUser user, PricingPlan plan, UserDetail existing)
+        {
+            var isPaidPlan = plan.Price > 0;
+            var hasNewPaymentMethod = !string.IsNullOrWhiteSpace(Input.PaymentMethodId);
+
+            // Get Stripe payment method details if a new card was provided
+            StripePaymentMethodDetails pmDetails = null;
+            if (hasNewPaymentMethod)
+            {
+                pmDetails = await stripeService.GetPaymentMethodDetailsAsync(Input.PaymentMethodId);
+            }
+
+            if (existing == null)
+            {
+                // New subscriber
+                string stripeCustomerId = null;
+                string stripeSubscriptionId = null;
+                string stripeStatus = null;
+
+                if (isPaidPlan && hasNewPaymentMethod)
                 {
-                    Id = Guid.NewGuid(),
+                    stripeCustomerId = await stripeService.GetOrCreateCustomerAsync(user.Id, user.Email);
+                    var result = await stripeService.SubscribeAsync(stripeCustomerId, plan.StripePriceId, Input.PaymentMethodId);
+                    stripeSubscriptionId = result.SubscriptionId;
+                    stripeStatus = result.Status;
+                }
+
+                dbContext.UserDetails.Add(new UserDetail
+                {
                     UserId = user.Id,
-                    NotifyOnCritical = Input.NotifyOnCritical,
-                    NotifyOnError = Input.NotifyOnError,
-                    NotifyOnRegression = Input.NotifyOnRegression,
+                    PlanId = plan.Id,
+                    StartDate = DateTime.UtcNow,
+                    CardholderName = pmDetails?.CardholderName,
+                    CardLastFour = pmDetails?.LastFour,
+                    CardExpiry = pmDetails?.Expiry,
+                    CardBrand = pmDetails?.Brand,
+                    BillingAddress = Input.BillingAddress,
+                    BillingCity = Input.BillingCity,
+                    BillingState = Input.BillingState,
+                    BillingZip = Input.BillingZip,
+                    BillingCountry = Input.BillingCountry,
+                    StripeCustomerId = stripeCustomerId,
+                    StripeSubscriptionId = stripeSubscriptionId,
+                    StripeSubscriptionStatus = stripeStatus ?? (isPaidPlan ? null : "active"),
                 });
             }
             else
             {
-                var subs = await dbContext.UserSubscriptions.FindAsync(Input.UserSubscriptionId);
-                subs.NotifyOnRegression = Input.NotifyOnRegression;
-                subs.NotifyOnCritical = Input.NotifyOnCritical;
-                subs.NotifyOnError = Input.NotifyOnError;
+                // Existing subscriber — update
+                var planChanged = existing.PlanId != plan.Id;
+
+                if (isPaidPlan)
+                {
+                    // Ensure Stripe customer exists
+                    existing.StripeCustomerId ??= await stripeService.GetOrCreateCustomerAsync(user.Id, user.Email);
+
+                    if (planChanged && !string.IsNullOrEmpty(existing.StripeSubscriptionId))
+                    {
+                        // Change plan on existing subscription
+                        var result = await stripeService.UpdateSubscriptionPlanAsync(existing.StripeSubscriptionId, plan.StripePriceId);
+                        existing.StripeSubscriptionId = result.SubscriptionId;
+                        existing.StripeSubscriptionStatus = result.Status;
+                    }
+                    else if (string.IsNullOrEmpty(existing.StripeSubscriptionId))
+                    {
+                        // Had free plan, now upgrading — need a payment method
+                        if (!hasNewPaymentMethod)
+                            throw new InvalidOperationException("Payment method required when upgrading from free plan.");
+
+                        var result = await stripeService.SubscribeAsync(existing.StripeCustomerId, plan.StripePriceId, Input.PaymentMethodId);
+                        existing.StripeSubscriptionId = result.SubscriptionId;
+                        existing.StripeSubscriptionStatus = result.Status;
+                    }
+
+                    if (hasNewPaymentMethod && !string.IsNullOrEmpty(existing.StripeSubscriptionId))
+                    {
+                        await stripeService.UpdatePaymentMethodAsync(existing.StripeCustomerId, existing.StripeSubscriptionId, Input.PaymentMethodId);
+                    }
+                }
+                else if (planChanged && !string.IsNullOrEmpty(existing.StripeSubscriptionId))
+                {
+                    // Downgrading to free — cancel Stripe subscription
+                    await stripeService.CancelSubscriptionAsync(existing.StripeSubscriptionId);
+                    existing.StripeSubscriptionId = null;
+                    existing.StripeSubscriptionStatus = "canceled";
+                }
+
+                existing.PlanId = plan.Id;
+                if (planChanged) existing.StartDate = DateTime.UtcNow;
+
+                if (pmDetails != null)
+                {
+                    existing.CardholderName = pmDetails.CardholderName ?? existing.CardholderName;
+                    existing.CardLastFour = pmDetails.LastFour;
+                    existing.CardExpiry = pmDetails.Expiry;
+                    existing.CardBrand = pmDetails.Brand;
+                }
+
+                if (!string.IsNullOrWhiteSpace(Input.BillingAddress)) existing.BillingAddress = Input.BillingAddress;
+                if (!string.IsNullOrWhiteSpace(Input.BillingCity)) existing.BillingCity = Input.BillingCity;
+                if (Input.BillingState != null) existing.BillingState = Input.BillingState;
+                if (!string.IsNullOrWhiteSpace(Input.BillingZip)) existing.BillingZip = Input.BillingZip;
+                if (!string.IsNullOrWhiteSpace(Input.BillingCountry)) existing.BillingCountry = Input.BillingCountry;
             }
 
             await dbContext.SaveChangesAsync();
-            await signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
-            return RedirectToPage();
         }
     }
 }

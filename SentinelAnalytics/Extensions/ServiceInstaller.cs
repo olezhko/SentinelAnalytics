@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.UI.Services;
 using SentinelAnalytics.Services;
+using Stripe;
 
 namespace SentinelAnalytics.Extensions
 {
@@ -10,6 +11,9 @@ namespace SentinelAnalytics.Extensions
             services.AddScoped<IGeminiService, GeminiService>();
             services.AddScoped<IEmailSender, SentinelEmailSender>();
             services.AddScoped<ICrashNotificationService, CrashNotificationService>();
+            services.AddScoped<IStripeService, StripeService>();
+
+            StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 
             services.AddHttpClient();
 

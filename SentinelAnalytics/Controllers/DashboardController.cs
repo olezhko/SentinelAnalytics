@@ -149,9 +149,10 @@ public class DashboardController(
 
         // Group by Exception to find regressions/counts
         var groupedCrashes = recentCrashesRaw
-            .GroupBy(c => c.ExceptionName)
+            .GroupBy(c => new ExceptionStackTrace( c.ExceptionName, c.StackTrace))
             .Select(g => new CrashReportSummary
             {
+                Exception = g.Key,
                 Report = g.OrderByDescending(x => x.Timestamp).First(),
                 OccurrenceCount = g.Count(),
                 AffectedUsersCount = g.Select(x => x.UserId ?? x.Session.DeviceId).Distinct().Count(),

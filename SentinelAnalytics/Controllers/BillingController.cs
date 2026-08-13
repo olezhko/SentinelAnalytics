@@ -38,31 +38,23 @@ namespace SentinelAnalytics.Controllers
                 CurrentEventCountMonth = await db.MobileEvents
                     .CountAsync(e => managedProjectIds.Contains(e.ProjectId) && e.Timestamp >= startOfMonth),
                 CurrentCrashCountMonth = await db.CrashReports
-                    .CountAsync(c => managedProjectIds.Contains(c.ProjectId) && c.Timestamp >= startOfMonth)
+                    .CountAsync(c => managedProjectIds.Contains(c.ProjectId) && c.Timestamp >= startOfMonth),
+                StartDate = sub.StartDate,
+                StripeSubscriptionStatus = sub.StripeSubscriptionStatus,
+                CardLastFour = sub.CardLastFour,
+                CardExpiry = sub.CardExpiry,
+                CardBrand = sub.CardBrand,
+                CardholderName = sub.CardholderName,
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePlan(Guid planId)
+        public IActionResult ChangePlan()
         {
-            var user = await userManager.GetUserAsync(User);
-            var sub = await db.UserDetails.FirstOrDefaultAsync(s => s.UserId == user.Id);
-
-            if (sub == null)
-            {
-                sub = new UserDetail { UserId = user.Id, PlanId = planId };
-                db.UserDetails.Add(sub);
-            }
-            else
-            {
-                sub.PlanId = planId;
-                sub.StartDate = DateTime.UtcNow;
-            }
-
-            await db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            // Plan changes with payment go through the Billing identity page
+            return RedirectToPage("/Account/Manage/Billing", new { area = "Identity" });
         }
     }
 }

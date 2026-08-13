@@ -8,11 +8,6 @@ public class UserDetailConfiguration : IEntityTypeConfiguration<UserDetail>
 {
     public void Configure(EntityTypeBuilder<UserDetail> builder)
     {
-        // Primary Key
-        builder.HasKey(x => new { x.UserId, x.PlanId});
-
-        // Unique constraint (ensures 1 subscription per user)
-        builder.HasIndex(x => x.UserId)
-               .IsUnique();
+        builder.HasKey(x => x.UserId);
     }
 }
