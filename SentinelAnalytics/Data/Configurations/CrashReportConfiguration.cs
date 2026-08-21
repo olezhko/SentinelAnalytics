@@ -55,5 +55,8 @@ public sealed class CrashReportConfiguration : IEntityTypeConfiguration<CrashRep
         builder.HasIndex(x => x.SessionId);
         builder.HasIndex(x => x.Timestamp);
         builder.HasIndex(x => new { x.ProjectId, x.Severity });
+        builder.HasIndex(x => new { x.ProjectId, x.Timestamp });
+        builder.HasIndex(x => new { x.ProjectId, x.IsResolved });
+        builder.HasIndex(x => new { x.ProjectId, x.IsIgnored });
     }
 }

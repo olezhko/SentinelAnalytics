@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SentinelAnalytics.Data;
 
@@ -11,9 +12,11 @@ using SentinelAnalytics.Data;
 namespace SentinelAnalytics.Data.Migrations
 {
     [DbContext(typeof(SentinelDbContext))]
-    partial class SentinelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814070932_AddCrashReportGroupingIndexes")]
+    partial class AddCrashReportGroupingIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,9 +237,6 @@ namespace SentinelAnalytics.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<bool>("IsIgnored")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsResolved")
                         .HasColumnType("bit");
 
@@ -286,8 +286,6 @@ namespace SentinelAnalytics.Data.Migrations
                     b.HasIndex("SessionId");
 
                     b.HasIndex("Timestamp");
-
-                    b.HasIndex("ProjectId", "IsIgnored");
 
                     b.HasIndex("ProjectId", "IsResolved");
 
@@ -395,18 +393,18 @@ namespace SentinelAnalytics.Data.Migrations
                             MaxProjects = 10,
                             MaxTeamMembersPerProject = 10,
                             Name = "Pro",
-                            Price = 19m
+                            Price = 49m
                         },
                         new
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000003"),
                             Description = "Enterprise-grade scale and support.",
-                            MaxCrashesPerMonth = 2147483647,
-                            MaxEventsPerMonth = 2147483647,
-                            MaxProjects = 2147483647,
-                            MaxTeamMembersPerProject = 2147483647,
+                            MaxCrashesPerMonth = 50000,
+                            MaxEventsPerMonth = 1000000,
+                            MaxProjects = 100,
+                            MaxTeamMembersPerProject = 50,
                             Name = "Max",
-                            Price = 100m
+                            Price = 199m
                         });
                 });
 

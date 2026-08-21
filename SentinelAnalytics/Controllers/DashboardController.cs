@@ -113,6 +113,14 @@ public class DashboardController(
         return View(demoStats);
     }
 
+    private async Task<bool> IsUserInProjectTeam(Project project)
+    {
+        var userId = userManager.GetUserId(User);
+
+        return await db.ProjectMembers.AnyAsync(item => item.ProjectId == project.Id
+            && item.UserId == userId);
+    }
+
     public async Task<IActionResult> Index(Guid projectId, string? appVersion, string? timePeriod, Severity? severity, string? resolutionStatus,
         string? searchQuery)
     {
@@ -144,23 +152,35 @@ public class DashboardController(
         var crashFreeRate = 100.0 - ((double)impactedUsers / estimatedActiveUsers * 100.0);
         var recentCrashesRaw = await query
             .OrderByDescending(c => c.Timestamp)
-            .Take(50)
             .ToListAsync();
 
-        // Group by Exception to find regressions/counts
         var groupedCrashes = recentCrashesRaw
             .GroupBy(c => new ExceptionStackTrace( c.ExceptionName, c.StackTrace))
-            .Select(g => new CrashReportSummary
+            .Select(g =>
             {
-                Exception = g.Key,
-                Report = g.OrderByDescending(x => x.Timestamp).First(),
-                OccurrenceCount = g.Count(),
-                AffectedUsersCount = g.Select(x => x.UserId ?? x.Session.DeviceId).Distinct().Count(),
-                IsRegression = g.Any(x => x.IsResolved && x.Timestamp > (x.ResolvedAt ?? DateTime.MinValue))
-            }).ToList();
+                var newest = g.OrderByDescending(x => x.Timestamp).First();
+                return new CrashReportSummary
+                {
+                    Exception = g.Key,
+                    Reports = [.. g],
+                    OccurrenceCount = g.Count(),
+                    AffectedUsersCount = g.Select(x => x.UserId ?? x.Session.DeviceId).Distinct().Count(),
+                    IsRegression = g.Any(x => x.IsResolved && x.Timestamp > (x.ResolvedAt ?? DateTime.MinValue)),
+                    AllResolved = g.All(x => x.IsResolved),
+                    AllIgnored = g.All(x => x.IsIgnored),
+                    Message = newest.Message,
+                    LastCrashAt = newest.Timestamp,
+                };
+            })
+            .OrderByDescending(g => g.LastCrashAt)
+            .ToList();
 
         var stats = new DashboardStatsViewModel
         {
+            RecentCrashes = await query
+                .OrderByDescending(c => c.Timestamp)
+                .ToListAsync(),
+
             TotalCrashes = totalCrashes,
             UniqueSessionsImpacted = impactedUsers,
             CrashFreeUserRate = Math.Max(0, Math.Min(100, crashFreeRate)),
@@ -170,10 +190,6 @@ public class DashboardController(
                 .OrderBy(g => g.Key)
                 .Select(g => new DailyStat { Date = g.Key.ToString("MMM dd"), Count = g.Count() })
                 .ToListAsync(),
-            RecentCrashes = await query
-                .OrderByDescending(c => c.Timestamp)
-                .Take(25)
-                .ToListAsync(),
             ActiveSessionsCount = totalSessions,
             AvailableVersions = allVersions,
             SelectedVersion = appVersion,
@@ -181,18 +197,97 @@ public class DashboardController(
             SelectedPeriod = timePeriod,
             SelectedResolution = resolutionStatus,
             CurrentProjectId = projectId,
-            SearchQuery = searchQuery
+            SearchQuery = searchQuery,
+            GroupedCrashes = groupedCrashes
         };
 
         return View(stats);
     }
 
-    private async Task<bool> IsUserInProjectTeam(Project project)
+    public async Task<IActionResult> GroupDetails(Guid projectId, Guid[] ids, string? appVersion, string? timePeriod, Severity? severity,
+        string? resolutionStatus, string? searchQuery)
     {
-        var userId = userManager.GetUserId(User);
+        var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
 
-        return await db.ProjectMembers.AnyAsync(item => item.ProjectId == project.Id
-            && item.UserId == userId);
+        if (project == null || !await IsUserInProjectTeam(project))
+        {
+            return Forbid();
+        }
+
+        if (ids == null || ids.Length == 0)
+        {
+            return BadRequest();
+        }
+
+        var crashes = await db.CrashReports
+            .Include(c => c.Session)
+            .AsNoTracking()
+            .Where(c => c.ProjectId == projectId && ids.Contains(c.Id))
+            .OrderByDescending(c => c.Timestamp)
+            .ToListAsync();
+
+        if (crashes.Count == 0)
+        {
+            return NotFound();
+        }
+
+        return PartialView("_CrashGroupDetails", new CrashGroupDetailsViewModel
+        {
+            Crashes = crashes,
+            ProjectId = projectId,
+            AppVersion = appVersion,
+            TimePeriod = timePeriod,
+            Severity = severity,
+            ResolutionStatus = resolutionStatus,
+            SearchQuery = searchQuery
+        });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ResolveGroup(Guid projectId, Guid[] ids, string comment, string? appVersion, string? timePeriod, Severity? severity,
+        string? resolutionStatus, string? searchQuery)
+    {
+        var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
+
+        if (project == null || !await IsUserInProjectTeam(project))
+        {
+            return Forbid();
+        }
+
+        if (ids != null && ids.Length > 0)
+        {
+            var now = DateTime.UtcNow;
+
+            await db.CrashReports
+                .Where(c => c.ProjectId == projectId && ids.Contains(c.Id) && !c.IsResolved)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(c => c.IsResolved, true)
+                    .SetProperty(c => c.ResolvedAt, now)
+                    .SetProperty(c => c.ResolutionComment, comment));
+        }
+
+        return RedirectToAction(nameof(Index), new { projectId, appVersion, timePeriod, severity, resolutionStatus, searchQuery });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> IgnoreGroup(Guid projectId, Guid[] ids, string? appVersion, string? timePeriod, Severity? severity,
+        string? resolutionStatus, string? searchQuery)
+    {
+        var project = await db.Projects.FirstOrDefaultAsync(i => i.Id == projectId);
+
+        if (project == null || !await IsUserInProjectTeam(project))
+        {
+            return Forbid();
+        }
+
+        if (ids != null && ids.Length > 0)
+        {
+            await db.CrashReports
+                .Where(c => c.ProjectId == projectId && ids.Contains(c.Id) && !c.IsIgnored)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.IsIgnored, true));
+        }
+
+        return RedirectToAction(nameof(Index), new { projectId, appVersion, timePeriod, severity, resolutionStatus, searchQuery });
     }
 
     public async Task<IActionResult> CrashDetails(Guid id)

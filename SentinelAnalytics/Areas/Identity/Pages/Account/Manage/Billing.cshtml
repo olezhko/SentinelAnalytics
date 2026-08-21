@@ -134,9 +134,9 @@
                             </p>
                             <p class="text-xs text-slate-500">@plan.Description</p>
                             <ul class="text-xs text-slate-500 space-y-1 pt-1">
-                                <li>@plan.MaxProjects project@(plan.MaxProjects != 1 ? "s" : "")</li>
-                                <li>@plan.MaxEventsPerMonth.ToString("N0") events/mo</li>
-                                <li>@plan.MaxTeamMembersPerProject members/project</li>
+                                <li>@(plan.MaxProjects == int.MaxValue ? "Unlimited" : plan.MaxProjects.ToString("N0")) project@(plan.MaxProjects != 1 ? "s" : "")</li>
+                                <li>@(plan.MaxEventsPerMonth == int.MaxValue ? "Unlimited" : plan.MaxEventsPerMonth.ToString("N0")) events/mo</li>
+                                <li>@(plan.MaxTeamMembersPerProject == int.MaxValue ? "Unlimited" : plan.MaxTeamMembersPerProject.ToString("N0")) members/project</li>
                             </ul>
                         </button>
                     }

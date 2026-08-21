@@ -31,7 +31,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-sm font-black text-slate-900">Projects</p>
-                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentProjectCount of @Model.CurrentPlan.MaxProjects used</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentProjectCount of @(Model.CurrentPlan.MaxProjects == int.MaxValue ? "Unlimited" : Model.CurrentPlan.MaxProjects.ToString("N0")) used</p>
                             </div>
                             <span class="text-sm font-black text-slate-900">@Model.ProjectUsagePercent.ToString("F0")%</span>
                         </div>
@@ -45,7 +45,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-sm font-black text-slate-900">Events Ingested</p>
-                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentEventCountMonth.ToString("N0") of @Model.CurrentPlan.MaxEventsPerMonth.ToString("N0") used</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentEventCountMonth.ToString("N0") of @(Model.CurrentPlan.MaxEventsPerMonth == int.MaxValue ? "Unlimited" : Model.CurrentPlan.MaxEventsPerMonth.ToString("N0")) used</p>
                             </div>
                             <span class="text-sm font-black text-slate-900">@Model.EventUsagePercent.ToString("F1")%</span>
                         </div>
@@ -59,7 +59,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-sm font-black text-slate-900">Crash Reports</p>
-                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentCrashCountMonth.ToString("N0") of @Model.CurrentPlan.MaxCrashesPerMonth.ToString("N0") used</p>
+                                <p class="text-xs text-slate-400 font-bold uppercase">@Model.CurrentCrashCountMonth.ToString("N0") of @(Model.CurrentPlan.MaxCrashesPerMonth == int.MaxValue ? "Unlimited" : Model.CurrentPlan.MaxCrashesPerMonth.ToString("N0")) used</p>
                             </div>
                             <span class="text-sm font-black text-slate-900">@Model.CrashUsagePercent.ToString("F1")%</span>
                         </div>
@@ -82,9 +82,9 @@
                             
                             <div class="space-y-3 mb-8 flex-1">
                                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Includes:</p>
-                                <p class="text-xs font-bold text-slate-700">@plan.MaxProjects Projects</p>
-                                <p class="text-xs font-bold text-slate-700">@plan.MaxEventsPerMonth.ToString("N0") Events</p>
-                                <p class="text-xs font-bold text-slate-700">@plan.MaxCrashesPerMonth.ToString("N0") Crashes</p>
+                                <p class="text-xs font-bold text-slate-700">@(plan.MaxProjects == int.MaxValue ? "Unlimited" : plan.MaxProjects.ToString("N0")) Projects</p>
+                                <p class="text-xs font-bold text-slate-700">@(plan.MaxEventsPerMonth == int.MaxValue ? "Unlimited" : plan.MaxEventsPerMonth.ToString("N0")) Events</p>
+                                <p class="text-xs font-bold text-slate-700">@(plan.MaxCrashesPerMonth == int.MaxValue ? "Unlimited" : plan.MaxCrashesPerMonth.ToString("N0")) Crashes</p>
                             </div>
 
                             @if (plan.Id == Model.CurrentPlan.Id)

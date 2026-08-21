@@ -21,6 +21,7 @@ public class CrashReport
     public bool IsResolved { get; set; } = false;
     public DateTime? ResolvedAt { get; set; }
     public string? ResolutionComment { get; set; }
+    public bool IsIgnored { get; set; } = false;
 
     public Guid ProjectId { get; set; }
     [ForeignKey("ProjectId")]

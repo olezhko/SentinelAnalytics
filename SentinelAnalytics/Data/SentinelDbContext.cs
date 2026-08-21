@@ -56,7 +56,7 @@ namespace SentinelAnalytics.Data
                {
                    Id = Guid.Parse("f0000000-0000-0000-0000-000000000002"),
                    Name = "Pro",
-                   Price = 49,
+                   Price = 19,
                    MaxProjects = 10,
                    MaxEventsPerMonth = 100000,
                    MaxCrashesPerMonth = 5000,
@@ -67,11 +67,11 @@ namespace SentinelAnalytics.Data
                {
                    Id = Guid.Parse("f0000000-0000-0000-0000-000000000003"),
                    Name = "Max",
-                   Price = 199,
-                   MaxProjects = 100,
-                   MaxEventsPerMonth = 1000000,
-                   MaxCrashesPerMonth = 50000,
-                   MaxTeamMembersPerProject = 50,
+                   Price = 100,
+                   MaxProjects = int.MaxValue,
+                   MaxEventsPerMonth = int.MaxValue,
+                   MaxCrashesPerMonth = int.MaxValue,
+                   MaxTeamMembersPerProject = int.MaxValue,
                    Description = "Enterprise-grade scale and support."
                }
            );

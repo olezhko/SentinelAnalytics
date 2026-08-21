@@ -12,6 +12,7 @@ public class DashboardStatsViewModel
     public double CrashFreeUserRate { get; set; }
     public List<DailyStat> DailyTrends { get; set; } = [];
     public List<CrashReport> RecentCrashes { get; set; } = [];
+    public List<CrashReportSummary> GroupedCrashes { get; set; } = [];
 
     public List<string> AvailableVersions { get; set; } = new List<string>();
     public string? SelectedVersion { get; set; }

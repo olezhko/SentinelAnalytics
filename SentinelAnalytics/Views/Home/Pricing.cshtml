@@ -34,19 +34,19 @@
                 <div class="space-y-4 mb-12 flex-1">
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-                        <span class="text-slate-700 font-bold">@plan.MaxProjects Projects</span>
+                        <span class="text-slate-700 font-bold">@(plan.MaxProjects == int.MaxValue ? "Unlimited" : plan.MaxProjects.ToString("N0")) Projects</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-                        <span class="text-slate-700 font-bold">@plan.MaxEventsPerMonth.ToString("N0") Events/mo</span>
+                        <span class="text-slate-700 font-bold">@(plan.MaxEventsPerMonth == int.MaxValue ? "Unlimited" : plan.MaxEventsPerMonth.ToString("N0")) Events/mo</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-                        <span class="text-slate-700 font-bold">@plan.MaxCrashesPerMonth.ToString("N0") Crashes/mo</span>
+                        <span class="text-slate-700 font-bold">@(plan.MaxCrashesPerMonth == int.MaxValue ? "Unlimited" : plan.MaxCrashesPerMonth.ToString("N0")) Crashes/mo</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">✓</span>
-                        <span class="text-slate-700 font-bold">@plan.MaxTeamMembersPerProject Team Members</span>
+                        <span class="text-slate-700 font-bold">@(plan.MaxTeamMembersPerProject == int.MaxValue ? "Unlimited" : plan.MaxTeamMembersPerProject.ToString("N0")) Team Members</span>
                     </div>
                 </div>
 
